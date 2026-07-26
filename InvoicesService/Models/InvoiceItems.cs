@@ -8,13 +8,13 @@ public class InvoiceItems
 {
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-    public Guid InvoiceItemId { get; set; }
+    public Guid Id { get; set; }
     
     [Column("invoiceId")]
     public Guid InvoiceId { get; set; }
     
-    [Column("customerId")]
-    public Guid CustomerId { get; set; }
+    [Column("productId")]
+    public Guid ProductId { get; set; }
     
     [Column("quantity")]
     [Required]

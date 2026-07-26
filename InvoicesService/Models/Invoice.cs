@@ -5,10 +5,9 @@ using InvoicesService.Enums;
 namespace InvoicesService.Models;
 
 [Table("Invoices")]
-public class Invoices
+public class Invoice
 {
     [Key]
-    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     [Column("id")]
     public Guid Id { get; set; }
     
@@ -19,8 +18,6 @@ public class Invoices
     [Required]
     [Column("currency")]
     public CurrencyType Currency { get; set; }
-    
-    public InvoiceItems InvoiceItems { get; set; }
     
     [Column("total")]
     public decimal Total { get; set; }

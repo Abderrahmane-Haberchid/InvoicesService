@@ -5,7 +5,7 @@ namespace InvoicesService.DbContext;
 
 public class AppDbContext : Microsoft.EntityFrameworkCore.DbContext
 {
-    public DbSet<Invoices> Invoices { get; set; }
+    public DbSet<Invoice> Invoices { get; set; }
     public DbSet<InvoiceItems> InvoiceItems { get; set; }
     
     public AppDbContext(DbContextOptions<AppDbContext> options)
