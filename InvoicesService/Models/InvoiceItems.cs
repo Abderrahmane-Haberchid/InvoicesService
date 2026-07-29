@@ -12,9 +12,11 @@ public class InvoiceItems
     
     [Column("invoiceId")]
     public Guid InvoiceId { get; set; }
+
+    public Invoice Invoice { get; set; } = null;
     
     [Column("productId")]
-    public Guid ProductId { get; set; }
+    public int ProductId { get; set; }
     
     [Column("quantity")]
     [Required]

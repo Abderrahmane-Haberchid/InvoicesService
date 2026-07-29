@@ -1,6 +1,7 @@
+using FluentValidation;
 using InvoicesService.Enums;
 using InvoicesService.Features.CreateInvoice.Dtos;
-using InvoicesService.Features.Dtos;
+using InvoicesService.Features.CreateInvoice.Dtos.requests;
 using InvoicesService.Models;
 using InvoicesService.Respository;
 
@@ -8,6 +9,7 @@ namespace InvoicesService.Features.CreateInvoice.Services;
 
 public class InvoiceService(
     IInvoiceRepository invoiceRepository,
+    IValidator<CreateInvoiceDto> validator,
     ILogger<InvoiceService> logger) 
     : IInvoiceService
 {
@@ -15,10 +17,13 @@ public class InvoiceService(
         CreateInvoiceDto invoiceDto, 
         CancellationToken cancellationToken)
     {
+        var validationResult = await validator.ValidateAsync(invoiceDto, cancellationToken);
+        
+        if(!validationResult.IsValid)
+            throw new ValidationException(validationResult.Errors);
+        
         logger.LogInformation("Invoice for customer {id} start processing in invoice service", 
             invoiceDto.CustomerId);
-        
-        ArgumentNullException.ThrowIfNull(invoiceDto);
         
         var invoiceId = Guid.NewGuid();
         var invoice = new Invoice
@@ -27,13 +32,13 @@ public class InvoiceService(
             CustomerId = invoiceDto.CustomerId,
             Currency = invoiceDto.Currency,
             Total = invoiceDto.Items.Sum(item => item.Quantity * item.UnitPrice),
-            CreatedAt = DateTime.Now,
-            Status = InvoiceStatus.CREATED
+            CreatedAt = DateTime.UtcNow,
+            Status = InvoiceStatus.CREATED,
+            Items = ExtractInvoiceItems(invoiceDto, invoiceId)
         };
-        var invoiceItems = ExtractInvoiceItems(invoiceDto, invoiceId);
         
         var savedInvoice = await invoiceRepository
-            .CreateInvoiceAsync(invoice, invoiceItems, cancellationToken);
+            .CreateInvoiceAsync(invoice, cancellationToken);
 
         return new InvoiceResponseDto(
             savedInvoice.Id,

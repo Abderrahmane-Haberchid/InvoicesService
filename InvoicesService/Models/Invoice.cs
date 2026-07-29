@@ -10,10 +10,11 @@ public class Invoice
     [Key]
     [Column("id")]
     public Guid Id { get; set; }
+    public List<InvoiceItems> Items { get; set; }
     
     [Required]
     [Column("customerId")]
-    public Guid CustomerId { get; set; }
+    public int CustomerId { get; set; }
     
     [Required]
     [Column("currency")]

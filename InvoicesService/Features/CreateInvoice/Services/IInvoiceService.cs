@@ -1,5 +1,5 @@
 using InvoicesService.Features.CreateInvoice.Dtos;
-using InvoicesService.Features.Dtos;
+using InvoicesService.Features.CreateInvoice.Dtos.requests;
 
 namespace InvoicesService.Features.CreateInvoice.Services;
 

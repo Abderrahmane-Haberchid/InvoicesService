@@ -1,8 +1,9 @@
+using InvoicesService.Features.CreateInvoice.Dtos;
+using InvoicesService.Features.CreateInvoice.Dtos.requests;
 using InvoicesService.Features.CreateInvoice.Services;
-using InvoicesService.Features.Dtos;
 using Microsoft.AspNetCore.Mvc;
 
-namespace InvoicesService.Features.CreateInvoice;
+namespace InvoicesService.Features.CreateInvoice.Controller;
 
 [ApiController]
 [Route("api/v1/invoices")]
