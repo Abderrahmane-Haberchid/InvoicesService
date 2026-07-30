@@ -1,44 +1,47 @@
+using System.Data;
 using FluentValidation;
 using InvoicesService.Enums;
-using InvoicesService.Features.CreateInvoice.Dtos;
 using InvoicesService.Features.CreateInvoice.Dtos.requests;
+using InvoicesService.Features.CreateInvoice.Dtos.responses;
+using InvoicesService.Features.CreateInvoice.Validators;
 using InvoicesService.Models;
 using InvoicesService.Respository;
+using Npgsql;
 
 namespace InvoicesService.Features.CreateInvoice.Services;
 
 public class InvoiceService(
     IInvoiceRepository invoiceRepository,
-    IValidator<CreateInvoiceDto> validator,
+    InvoiceRequestValidator invoiceRequestValidator,
     ILogger<InvoiceService> logger) 
     : IInvoiceService
 {
     public async Task<InvoiceResponseDto> CreateAsync(
-        CreateInvoiceDto invoiceDto, 
+        InvoiceRequest invoiceRequest, 
         CancellationToken cancellationToken)
     {
-        var validationResult = await validator.ValidateAsync(invoiceDto, cancellationToken);
-        
-        if(!validationResult.IsValid)
-            throw new ValidationException(validationResult.Errors);
+        ArgumentNullException.ThrowIfNull(invoiceRequest);
+        await invoiceRequestValidator.ValidateAndThrowAsync(invoiceRequest, cancellationToken);
         
         logger.LogInformation("Invoice for customer {id} start processing in invoice service", 
-            invoiceDto.CustomerId);
+            invoiceRequest.CustomerId);
         
         var invoiceId = Guid.NewGuid();
         var invoice = new Invoice
         {
             Id = invoiceId,
-            CustomerId = invoiceDto.CustomerId,
-            Currency = invoiceDto.Currency,
-            Total = invoiceDto.Items.Sum(item => item.Quantity * item.UnitPrice),
+            CustomerId = invoiceRequest.CustomerId,
+            Currency = invoiceRequest.Currency,
+            Total = invoiceRequest.Items.Sum(item => item.Quantity * item.UnitPrice),
             CreatedAt = DateTime.UtcNow,
             Status = InvoiceStatus.CREATED,
-            Items = ExtractInvoiceItems(invoiceDto, invoiceId)
+            Items = ExtractInvoiceItems(invoiceRequest, invoiceId)
         };
         
-        var savedInvoice = await invoiceRepository
-            .CreateInvoiceAsync(invoice, cancellationToken);
+        var savedInvoice = await invoiceRepository.CreateInvoiceAsync(invoice, cancellationToken);
+
+        if (savedInvoice is null)
+            throw new DataException();
 
         return new InvoiceResponseDto(
             savedInvoice.Id,
@@ -50,9 +53,9 @@ public class InvoiceService(
 
     }
 
-    private List<InvoiceItems> ExtractInvoiceItems(CreateInvoiceDto invoiceDto, Guid invoiceId)
+    private List<InvoiceItems> ExtractInvoiceItems(InvoiceRequest invoiceRequest, Guid invoiceId)
     {
-        return invoiceDto.Items.Select(invoiceItem => new InvoiceItems
+        return invoiceRequest.Items.Select(invoiceItem => new InvoiceItems
             {
                 Id = Guid.NewGuid(),
                 InvoiceId = invoiceId,

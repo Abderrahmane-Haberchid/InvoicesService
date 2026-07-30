@@ -1,7 +1,8 @@
-using FluentValidation;
+
 using InvoicesService.DbContext;
-using InvoicesService.Features.CreateInvoice.Dtos.requests;
+using InvoicesService.Exceptions;
 using InvoicesService.Features.CreateInvoice.Services;
+using InvoicesService.Features.CreateInvoice.Validators;
 using InvoicesService.Respository;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -42,11 +43,14 @@ builder.Services.AddControllers()
         );
     });
 
-builder.Services.AddScoped<IValidator, Validator>();
+builder.Services.AddScoped<InvoiceRequestValidator>();
+builder.Services.AddScoped<InvoiceItemRequestValidator>();
+
 builder.Services.AddScoped<IInvoiceRepository, InvoiceRepository>();
 builder.Services.AddScoped<IInvoiceService, InvoiceService>();
 
-
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
 
 var app = builder.Build();
 
@@ -54,6 +58,8 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
+
+app.UseExceptionHandler();
 
 app.MapHealthChecks("/health");
 //app.UseHttpsRedirection();
@@ -64,3 +70,5 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+public partial class Program { }

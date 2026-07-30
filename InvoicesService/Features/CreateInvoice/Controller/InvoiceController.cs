@@ -15,10 +15,10 @@ public class InvoiceController(
 
     [HttpPost]
     public async Task<IActionResult> Create(
-        [FromBody] CreateInvoiceDto invoiceDto, 
+        [FromBody] InvoiceRequest invoiceRequest, 
         CancellationToken cancellationToken)
     {
-        var invoiceResponse = await invoiceService.CreateAsync(invoiceDto, cancellationToken);
+        var invoiceResponse = await invoiceService.CreateAsync(invoiceRequest, cancellationToken);
         return Created($"api/v1/invoices/{invoiceResponse.InvoiceId}", invoiceResponse);
     }
 }

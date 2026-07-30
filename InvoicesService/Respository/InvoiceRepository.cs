@@ -16,10 +16,10 @@ public class InvoiceRepository(
 
         ArgumentNullException.ThrowIfNull(invoice);
         
-        await dbContext.Invoices.AddAsync(invoice, cancellationToken);
+        var saved = await dbContext.Invoices.AddAsync(invoice, cancellationToken);
         await dbContext.SaveChangesAsync(cancellationToken);
         
         logger.LogInformation("2. invoice saved {invoice} to database", invoice.Id);
-        return invoice;
+        return saved.Entity;
     }
 }

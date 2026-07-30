@@ -1,9 +1,10 @@
 using InvoicesService.Features.CreateInvoice.Dtos;
 using InvoicesService.Features.CreateInvoice.Dtos.requests;
+using InvoicesService.Features.CreateInvoice.Dtos.responses;
 
 namespace InvoicesService.Features.CreateInvoice.Services;
 
 public interface IInvoiceService
 {
-    public Task<InvoiceResponseDto> CreateAsync(CreateInvoiceDto invoiceDto, CancellationToken cancellationToken);
+    public Task<InvoiceResponseDto> CreateAsync(InvoiceRequest invoiceRequest, CancellationToken cancellationToken);
 }
