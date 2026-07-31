@@ -3,7 +3,9 @@ using InvoicesService.DbContext;
 using InvoicesService.Exceptions;
 using InvoicesService.Features.CreateInvoice.Services;
 using InvoicesService.Features.CreateInvoice.Validators;
+using InvoicesService.Features.GenerateInvoice.Services;
 using InvoicesService.Respository;
+using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -33,6 +35,27 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddAuthorization();
 #endregion
 
+#region MassTransit
+builder.Services.AddMassTransit(busConfiguration =>
+{
+    if (builder.Environment.IsEnvironment("Test"))
+    {
+        busConfiguration.ConfigureHealthCheckOptions(options => options.Name = null);
+    }
+    busConfiguration.SetKebabCaseEndpointNameFormatter();
+    busConfiguration.AddConsumer<InvoiceGenerator>();
+    
+    busConfiguration.UsingRabbitMq((context, cfg) =>
+    {
+        cfg.Host("localhost", "/", host =>
+        {
+            host.Username("guest");
+            host.Password("guest");
+        });
+    });
+});
+#endregion
+
 builder.Services.AddHealthChecks();
 
 builder.Services.AddControllers()
@@ -48,6 +71,7 @@ builder.Services.AddScoped<InvoiceItemRequestValidator>();
 
 builder.Services.AddScoped<IInvoiceRepository, InvoiceRepository>();
 builder.Services.AddScoped<IInvoiceService, InvoiceService>();
+builder.Services.AddScoped<IInvoiceGenerator, InvoiceGenerator>();
 
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();

@@ -6,6 +6,8 @@ using InvoicesService.Features.CreateInvoice.Services;
 using InvoicesService.Features.CreateInvoice.Validators;
 using InvoicesService.Models;
 using InvoicesService.Respository;
+using InvoicesService.Shared.Contracts;
+using MassTransit;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 
@@ -15,11 +17,14 @@ public class InvoiceServiceTests
 {
     private readonly InvoiceService _sut;
     private readonly Mock<IInvoiceRepository> _invoiceRepositoryMock;
+    private readonly Mock<IPublishEndpoint> _publishEndpointMock;
     private readonly InvoiceRequestValidator _invoiceRequestValidator;
 
     public InvoiceServiceTests()
     {
         _invoiceRepositoryMock = new Mock<IInvoiceRepository>();
+        _publishEndpointMock = new Mock<IPublishEndpoint>();
+        
         _invoiceRepositoryMock
             .Setup(x =>
                 x.CreateInvoiceAsync(
@@ -32,6 +37,7 @@ public class InvoiceServiceTests
         _sut = new InvoiceService(
             _invoiceRepositoryMock.Object,
             _invoiceRequestValidator,
+            _publishEndpointMock.Object,
             NullLogger<InvoiceService>.Instance);
     }
 
@@ -60,10 +66,10 @@ public class InvoiceServiceTests
         
         var expectedTotal = invoiceDto.Items.Sum(item => item.Quantity *  item.UnitPrice);
         
-        result.Should().NotBeNull();
+        Assert.NotNull(result);
         result.TotalAmount.Should().Be(expectedTotal);
         result.InvoiceId.Should().NotBeEmpty();
-        result.Currency.Should().Be(CurrencyType.EUR);
+        result!.Currency.Should().Be(CurrencyType.EUR);
         result.Status.Should().Be(InvoiceStatus.CREATED);
     }
 
@@ -94,7 +100,7 @@ public class InvoiceServiceTests
     public async Task CreateAsync_ShouldThrowValidationException_WhenCreateInvoiceDtoIsNull()
     {
         await Assert.ThrowsAsync<ArgumentNullException>(() =>
-            _sut.CreateAsync(null, CancellationToken.None));
+            _sut.CreateAsync((InvoiceRequest)null, CancellationToken.None));
     }
     
     [Fact]
@@ -131,5 +137,26 @@ public class InvoiceServiceTests
         var invoiceDto = new InvoiceRequest(10, CurrencyType.EUR, new List<InvoiceItemRequest>());
         
         await Assert.ThrowsAsync<ValidationException>(() => _sut.CreateAsync(invoiceDto, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task CreateAsync_ShouldInvokeIPublishEndpoint_WhenPublishEndpointIsCalled()
+    {
+        var invoiceDto = new InvoiceRequest(
+            123, 
+            CurrencyType.EUR,
+            [
+                new(123, 5, 400),
+                new(123, 5, 400),
+                new(123, 5, 400)
+            ]);
+        
+        await _sut.CreateAsync(invoiceDto, CancellationToken.None);
+        
+        _publishEndpointMock.Verify(x =>
+            x.Publish(
+                It.IsAny<InvoiceCreatedEvent>(), 
+                It.IsAny<CancellationToken>())
+            ,Times.Once);
     }
 }

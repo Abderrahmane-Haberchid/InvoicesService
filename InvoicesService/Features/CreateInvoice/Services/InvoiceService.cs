@@ -6,6 +6,8 @@ using InvoicesService.Features.CreateInvoice.Dtos.responses;
 using InvoicesService.Features.CreateInvoice.Validators;
 using InvoicesService.Models;
 using InvoicesService.Respository;
+using InvoicesService.Shared.Contracts;
+using MassTransit;
 using Npgsql;
 
 namespace InvoicesService.Features.CreateInvoice.Services;
@@ -13,11 +15,12 @@ namespace InvoicesService.Features.CreateInvoice.Services;
 public class InvoiceService(
     IInvoiceRepository invoiceRepository,
     InvoiceRequestValidator invoiceRequestValidator,
+    IPublishEndpoint publishEndpoint,
     ILogger<InvoiceService> logger) 
     : IInvoiceService
 {
     public async Task<InvoiceResponseDto> CreateAsync(
-        InvoiceRequest invoiceRequest, 
+        InvoiceRequest invoiceRequest,
         CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(invoiceRequest);
@@ -42,6 +45,13 @@ public class InvoiceService(
 
         if (savedInvoice is null)
             throw new DataException();
+
+        await publishEndpoint.Publish(new InvoiceCreatedEvent(
+                savedInvoice.Id,
+                savedInvoice.CustomerId,
+                savedInvoice.Total,
+                DateTime.UtcNow
+            ), cancellationToken);
 
         return new InvoiceResponseDto(
             savedInvoice.Id,
