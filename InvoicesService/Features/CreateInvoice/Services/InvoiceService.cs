@@ -8,7 +8,6 @@ using InvoicesService.Models;
 using InvoicesService.Respository;
 using InvoicesService.Shared.Contracts;
 using MassTransit;
-using Npgsql;
 
 namespace InvoicesService.Features.CreateInvoice.Services;
 
@@ -50,8 +49,7 @@ public class InvoiceService(
                 savedInvoice.Id,
                 savedInvoice.CustomerId,
                 savedInvoice.Total,
-                DateTime.UtcNow
-            ), cancellationToken);
+                DateTime.UtcNow), cancellationToken);
 
         return new InvoiceResponseDto(
             savedInvoice.Id,

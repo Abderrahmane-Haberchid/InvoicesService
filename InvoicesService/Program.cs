@@ -38,20 +38,30 @@ builder.Services.AddAuthorization();
 #region MassTransit
 builder.Services.AddMassTransit(busConfiguration =>
 {
-    if (builder.Environment.IsEnvironment("Test"))
+    busConfiguration.AddEntityFrameworkOutbox<AppDbContext>(options =>
     {
-        busConfiguration.ConfigureHealthCheckOptions(options => options.Name = null);
-    }
+        options.UsePostgres();
+        options.UseBusOutbox();
+        options.DisableInboxCleanupService();
+    });
     busConfiguration.SetKebabCaseEndpointNameFormatter();
+    busConfiguration.AddConfigureEndpointsCallback((context, name, cfg) =>
+        {
+            cfg.UseEntityFrameworkOutbox<AppDbContext>(context);
+        });
+        
     busConfiguration.AddConsumer<InvoiceGenerator>();
     
     busConfiguration.UsingRabbitMq((context, cfg) =>
     {
-        cfg.Host("localhost", "/", host =>
+        cfg.Host(builder.Configuration["RabbitMQ:Host"], "/", host =>
         {
-            host.Username("guest");
-            host.Password("guest");
+            host.Username(builder.Configuration["RabbitMQ:Username"]!);
+            host.Password(builder.Configuration["RabbitMQ:Password"]!);
         });
+        
+        cfg.UseMessageRetry(r => r.Interval(3, TimeSpan.FromSeconds(5)));
+        cfg.ConfigureEndpoints(context);
     });
 });
 #endregion

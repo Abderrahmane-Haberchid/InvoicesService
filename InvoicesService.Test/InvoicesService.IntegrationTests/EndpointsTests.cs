@@ -96,8 +96,6 @@ public class EndpointsTests : IClassFixture<CustomWebApplicationFactory>
     public async Task ShouldReturnCreatedStatus_WhenInvoiceDataAreEquivalentToRetunedObject()
     {
         var client = _factory.CreateClient();
-        using var scope = _factory.Services.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         
         var invoiceRequest = new InvoiceRequest(
             123,
@@ -144,7 +142,7 @@ public class EndpointsTests : IClassFixture<CustomWebApplicationFactory>
             }
         );
         
-        var response = await client.PostAsJsonAsync("api/v1/invoices", invoiceRequest);
+        var response = await client.PostAsJsonAsync("/api/v1/invoices", invoiceRequest);
         
         var options = new JsonSerializerOptions
         {

@@ -1,13 +1,12 @@
+using DotNet.Testcontainers.Builders;
 using InvoicesService.DbContext;
 using MassTransit;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
-using Org.BouncyCastle.Crypto.Utilities;
 using Testcontainers.PostgreSql;
 using Testcontainers.RabbitMq;
 
@@ -41,20 +40,20 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>, IAsyn
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        builder.UseEnvironment("Test");
-        builder.Configure<HealthCheckServiceOptions>(options =>
+        
+        builder.ConfigureAppConfiguration(config =>
         {
-            var masstransitChecks = options.Registrations
-                .Where(x => x.Tags.Contains("masstransit"))
-                .ToList();
-
-            foreach (var check in masstransitChecks)
-            {
-                options.Registrations.Remove(check);
-            }
+            config.AddInMemoryCollection(
+                new Dictionary<string,string>
+                {
+                    ["RabbitMQ:Host"] = _rabbitMqContainer.Hostname,
+                    ["RabbitMQ:Port"] = _rabbitMqContainer.GetMappedPublicPort(5672).ToString(),
+                    ["RabbitMQ:Username"] = "guest",
+                    ["RabbitMQ:Password"] = "guest"
+                }!);
         });
         
-        builder.ConfigureTestServices(services =>
+        builder.ConfigureServices(async services =>
         {
             services.RemoveAll<AppDbContext>();
             services.AddDbContext<AppDbContext>(options =>
@@ -62,24 +61,11 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>, IAsyn
                 options.UseNpgsql(_postgreSqlContainer.GetConnectionString());
             });
             
-            services.RemoveAll<IBus>();
-            services.RemoveAll<IBusControl>();
-            services.AddMassTransit(busConfiguration =>
-            {
-                busConfiguration.ConfigureHealthCheckOptions(options =>
-                {
-                    options.Name = null;
-                });
-                busConfiguration.UsingRabbitMq((context, cfg) =>
-                {
-                    cfg.Host(_rabbitMqContainer.GetConnectionString());
-                });
-            });
-            
             using var scope = services.BuildServiceProvider().CreateScope();
             var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
             
-            dbContext.Database.Migrate();
+            await dbContext.Database.EnsureCreatedAsync();
         });
+        
     }
 }
