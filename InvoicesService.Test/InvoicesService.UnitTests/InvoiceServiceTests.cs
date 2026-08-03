@@ -1,5 +1,7 @@
 using FluentAssertions;
 using FluentValidation;
+using InvoicesService.DbContext;
+using InvoicesService.Domain.Models;
 using InvoicesService.Enums;
 using InvoicesService.Features.CreateInvoice.Dtos.requests;
 using InvoicesService.Features.CreateInvoice.Services;
@@ -32,6 +34,10 @@ public class InvoiceServiceTests
                     It.IsAny<CancellationToken>()))
             .ReturnsAsync((Invoice invoice, CancellationToken ct) => invoice);
         
+        _invoiceRepositoryMock
+            .Setup(x => x.SaveChangeAsync(CancellationToken.None))
+            .Returns(Task.CompletedTask);
+        
         _invoiceRequestValidator = new InvoiceRequestValidator();
         
         _sut = new InvoiceService(
@@ -40,6 +46,30 @@ public class InvoiceServiceTests
             _publishEndpointMock.Object,
             NullLogger<InvoiceService>.Instance);
     }
+
+    [Fact]
+    public async Task CreateAsync_ShouldReturnTrue_WhenPublishEndpointIsInvoked()
+    {
+        var invoiceDto = new InvoiceRequest(
+            123, 
+            CurrencyType.EUR,
+            [
+                new(123, 5, 400),
+                new(123, 5, 400),
+                new(123, 5, 400)
+            ]);
+        
+        await _sut.CreateAsync(invoiceDto, CancellationToken.None);
+        
+        var expectedTotal = invoiceDto.Items.Sum(item => item.Quantity *  item.UnitPrice);
+        
+        _publishEndpointMock.Verify(x =>
+            x.Publish(
+                It.Is<InvoiceCreatedEvent>(i => i.CustomerId == invoiceDto.CustomerId && i.Total == expectedTotal), 
+                It.IsAny<CancellationToken>()
+                ), Times.Once
+        );
+    } 
 
     [Fact]
     public async Task CreateAsync_ShouldCreateInvoice_WhenInvoiceIsCreated()
@@ -100,7 +130,7 @@ public class InvoiceServiceTests
     public async Task CreateAsync_ShouldThrowValidationException_WhenCreateInvoiceDtoIsNull()
     {
         await Assert.ThrowsAsync<ArgumentNullException>(() =>
-            _sut.CreateAsync((InvoiceRequest)null, CancellationToken.None));
+            _sut.CreateAsync(null, CancellationToken.None));
     }
     
     [Fact]

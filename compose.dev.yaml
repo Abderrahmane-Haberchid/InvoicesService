@@ -1,34 +1,6 @@
-﻿version: "3.9"
+version: "3.9"
 
 services:
-
-  invoicesservice:
-    image: invoicesservice
-    container_name: invoices-service
-    build:
-      context: .
-      dockerfile: InvoicesService/Dockerfile
-    restart: unless-stopped
-    depends_on:
-      postgres:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
-      keycloak:
-        condition: service_started
-    environment:
-      ASPNETCORE_ENVIRONMENT: Development
-      ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
-      RabbitMQ__Host: rabbitmq
-      RabbitMQ__Port: 5672
-      RabbitMQ__Username: ${RABBITMQ_DEFAULT_USER}
-      RabbitMQ__Password: ${RABBITMQ_DEFAULT_PASS}
-      Keycloak__Authority: ${KEYCLOAK_AUTHORITY}
-      Keycloak__Audience: ${KEYCLOAK_AUDIENCE}
-    ports:
-      - "8080:8080"
-    networks:
-      - invoices-network
 
   postgres:
     image: postgres:17-alpine

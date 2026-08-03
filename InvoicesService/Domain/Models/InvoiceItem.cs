@@ -1,10 +1,10 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using InvoicesService.Domain.Models;
 
 namespace InvoicesService.Models;
 
-[Table("invoiceItems")]
-public class InvoiceItems
+public class InvoiceItem
 {
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]

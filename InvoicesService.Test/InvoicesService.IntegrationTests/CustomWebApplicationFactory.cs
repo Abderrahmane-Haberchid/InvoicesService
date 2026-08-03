@@ -68,4 +68,21 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>, IAsyn
         });
         
     }
+    
+    public async Task ResetDatabaseAsync()
+    {
+        using var scope = Services.CreateScope();
+
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        await db.Database.ExecuteSqlRawAsync("""
+                                             TRUNCATE TABLE
+                                                 "InboxState",
+                                                 "OutboxMessage",
+                                                 "OutboxState",
+                                                 "InvoiceItems",
+                                                 "Invoices"
+                                             RESTART IDENTITY CASCADE;
+                                             """);
+    }
 }

@@ -1,6 +1,7 @@
 
 using InvoicesService.DbContext;
 using InvoicesService.Exceptions;
+using InvoicesService.Features.CreateInvoice;
 using InvoicesService.Features.CreateInvoice.Services;
 using InvoicesService.Features.CreateInvoice.Validators;
 using InvoicesService.Features.GenerateInvoice.Services;
@@ -16,6 +17,9 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 {
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
+
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
 #region Authentication
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -76,9 +80,7 @@ builder.Services.AddControllers()
         );
     });
 
-builder.Services.AddScoped<InvoiceRequestValidator>();
-builder.Services.AddScoped<InvoiceItemRequestValidator>();
-
+builder.Services.AddCreateInvoiceServices();
 builder.Services.AddScoped<IInvoiceRepository, InvoiceRepository>();
 builder.Services.AddScoped<IInvoiceService, InvoiceService>();
 builder.Services.AddScoped<IInvoiceGenerator, InvoiceGenerator>();
@@ -91,8 +93,15 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    await db.Database.MigrateAsync();
+}
 app.UseExceptionHandler();
 
 app.MapHealthChecks("/health");
