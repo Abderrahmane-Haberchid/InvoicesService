@@ -1,5 +1,7 @@
 using System.Data;
 using FluentValidation;
+using InvoicesService.DbContext;
+using InvoicesService.Domain.Models;
 using InvoicesService.Enums;
 using InvoicesService.Features.CreateInvoice.Dtos.requests;
 using InvoicesService.Features.CreateInvoice.Dtos.responses;
@@ -8,7 +10,6 @@ using InvoicesService.Models;
 using InvoicesService.Respository;
 using InvoicesService.Shared.Contracts;
 using MassTransit;
-using Npgsql;
 
 namespace InvoicesService.Features.CreateInvoice.Services;
 
@@ -50,8 +51,9 @@ public class InvoiceService(
                 savedInvoice.Id,
                 savedInvoice.CustomerId,
                 savedInvoice.Total,
-                DateTime.UtcNow
-            ), cancellationToken);
+                DateTime.UtcNow), cancellationToken);
+        
+        await invoiceRepository.SaveChangeAsync(cancellationToken);
 
         return new InvoiceResponseDto(
             savedInvoice.Id,
@@ -63,9 +65,9 @@ public class InvoiceService(
 
     }
 
-    private List<InvoiceItems> ExtractInvoiceItems(InvoiceRequest invoiceRequest, Guid invoiceId)
+    private List<InvoiceItem> ExtractInvoiceItems(InvoiceRequest invoiceRequest, Guid invoiceId)
     {
-        return invoiceRequest.Items.Select(invoiceItem => new InvoiceItems
+        return invoiceRequest.Items.Select(invoiceItem => new InvoiceItem
             {
                 Id = Guid.NewGuid(),
                 InvoiceId = invoiceId,

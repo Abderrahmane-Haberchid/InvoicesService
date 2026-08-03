@@ -1,6 +1,7 @@
 
 using InvoicesService.DbContext;
 using InvoicesService.Exceptions;
+using InvoicesService.Features.CreateInvoice;
 using InvoicesService.Features.CreateInvoice.Services;
 using InvoicesService.Features.CreateInvoice.Validators;
 using InvoicesService.Features.GenerateInvoice.Services;
@@ -16,6 +17,9 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 {
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
+
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
 #region Authentication
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -38,20 +42,30 @@ builder.Services.AddAuthorization();
 #region MassTransit
 builder.Services.AddMassTransit(busConfiguration =>
 {
-    if (builder.Environment.IsEnvironment("Test"))
+    busConfiguration.AddEntityFrameworkOutbox<AppDbContext>(options =>
     {
-        busConfiguration.ConfigureHealthCheckOptions(options => options.Name = null);
-    }
+        options.UsePostgres();
+        options.UseBusOutbox();
+        options.DisableInboxCleanupService();
+    });
     busConfiguration.SetKebabCaseEndpointNameFormatter();
+    busConfiguration.AddConfigureEndpointsCallback((context, name, cfg) =>
+        {
+            cfg.UseEntityFrameworkOutbox<AppDbContext>(context);
+        });
+        
     busConfiguration.AddConsumer<InvoiceGenerator>();
     
     busConfiguration.UsingRabbitMq((context, cfg) =>
     {
-        cfg.Host("localhost", "/", host =>
+        cfg.Host(builder.Configuration["RabbitMQ:Host"], "/", host =>
         {
-            host.Username("guest");
-            host.Password("guest");
+            host.Username(builder.Configuration["RabbitMQ:Username"]!);
+            host.Password(builder.Configuration["RabbitMQ:Password"]!);
         });
+        
+        cfg.UseMessageRetry(r => r.Interval(3, TimeSpan.FromSeconds(5)));
+        cfg.ConfigureEndpoints(context);
     });
 });
 #endregion
@@ -66,9 +80,7 @@ builder.Services.AddControllers()
         );
     });
 
-builder.Services.AddScoped<InvoiceRequestValidator>();
-builder.Services.AddScoped<InvoiceItemRequestValidator>();
-
+builder.Services.AddCreateInvoiceServices();
 builder.Services.AddScoped<IInvoiceRepository, InvoiceRepository>();
 builder.Services.AddScoped<IInvoiceService, InvoiceService>();
 builder.Services.AddScoped<IInvoiceGenerator, InvoiceGenerator>();
@@ -81,8 +93,15 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    await db.Database.MigrateAsync();
+}
 app.UseExceptionHandler();
 
 app.MapHealthChecks("/health");

@@ -1,4 +1,5 @@
 using InvoicesService.DbContext;
+using InvoicesService.Domain.Models;
 using InvoicesService.Models;
 
 namespace InvoicesService.Respository;
@@ -17,9 +18,13 @@ public class InvoiceRepository(
         ArgumentNullException.ThrowIfNull(invoice);
         
         var saved = await dbContext.Invoices.AddAsync(invoice, cancellationToken);
-        await dbContext.SaveChangesAsync(cancellationToken);
         
         logger.LogInformation("2. invoice saved {invoice} to database", invoice.Id);
         return saved.Entity;
+    }
+
+    public async Task SaveChangeAsync(CancellationToken cancellationToken)
+    {
+        await  dbContext.SaveChangesAsync(cancellationToken);
     }
 }

@@ -1,4 +1,6 @@
+using InvoicesService.Domain.Models;
 using InvoicesService.Models;
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
 
 namespace InvoicesService.DbContext;
@@ -6,7 +8,7 @@ namespace InvoicesService.DbContext;
 public class AppDbContext : Microsoft.EntityFrameworkCore.DbContext
 {
     public DbSet<Invoice> Invoices { get; set; }
-    public DbSet<InvoiceItems> InvoiceItems { get; set; }
+    public DbSet<InvoiceItem> InvoiceItems { get; set; }
     
     public AppDbContext(DbContextOptions<AppDbContext> options)
         : base(options)
@@ -20,7 +22,11 @@ public class AppDbContext : Microsoft.EntityFrameworkCore.DbContext
             .HasMany(i => i.Items)
             .WithOne(ii => ii.Invoice)
             .HasForeignKey(ii => ii.InvoiceId)
-            .OnDelete(DeleteBehavior.Cascade);    
+            .OnDelete(DeleteBehavior.Cascade);   
+        
+        modelBuilder.AddInboxStateEntity();
+        modelBuilder.AddOutboxMessageEntity();
+        modelBuilder.AddOutboxStateEntity();
     }
     
 }

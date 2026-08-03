@@ -7,23 +7,54 @@ using InvoicesService.DbContext;
 using InvoicesService.Enums;
 using InvoicesService.Features.CreateInvoice.Dtos.requests;
 using InvoicesService.Features.CreateInvoice.Dtos.responses;
+using MassTransit.EntityFrameworkCoreIntegration;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace InvoicesServiceTest.InvoicesService.IntegrationTests;
 
-public class EndpointsTests : IClassFixture<CustomWebApplicationFactory>
+public class InvoiceControllerTests : IClassFixture<CustomWebApplicationFactory>
 {
     private CustomWebApplicationFactory _factory;
 
-    public EndpointsTests(CustomWebApplicationFactory factory)
+    public InvoiceControllerTests(CustomWebApplicationFactory factory)
     {
         _factory = factory;
+    }
+
+    [Fact]
+    public async Task ShouldReturnCreatedStatus_WhenOutboxMessageTableHaveOneRecord()
+    {
+        await _factory.ResetDatabaseAsync();
+        var client = _factory.CreateClient();
+        var invoice = new InvoiceRequest(
+            123,
+            CurrencyType.USD,
+            new List<InvoiceItemRequest>
+            {
+                new (1111, 10, 230),
+                new (1114, 10, 230),
+                new (1113, 10, 230),
+                new (1112, 10, 230),
+            }
+        );
+        
+        await client.PostAsJsonAsync("/api/v1/invoices", invoice);
+        
+        using var scope = _factory.Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        var outboxMessages =
+            await dbContext.Set<OutboxMessage>()
+                .ToListAsync();
+
+        outboxMessages.Should().HaveCount(1);
     }
     
     [Fact]
     public async Task ShouldReturnCreatedStatus_WhenReturnedObjectIsNotNull()
     {
+        await _factory.ResetDatabaseAsync();
         var client = _factory.CreateClient();
         
         var invoice = new InvoiceRequest(
@@ -46,6 +77,7 @@ public class EndpointsTests : IClassFixture<CustomWebApplicationFactory>
     [Fact]
     public async Task ShouldReturnCreatedStatus_WhenInvoiceDataAreEquivalentToSavedInvoice()
     {
+        await _factory.ResetDatabaseAsync();
         var client = _factory.CreateClient();
         using var scope = _factory.Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -61,7 +93,7 @@ public class EndpointsTests : IClassFixture<CustomWebApplicationFactory>
                 new (1112, 10, 230),
             }
         );
-        var response = await client.PostAsJsonAsync("/api/v1/invoices", invoiceRequest);
+        await client.PostAsJsonAsync("/api/v1/invoices", invoiceRequest);
         
         var savedInvoice = await dbContext
             .Invoices
@@ -95,9 +127,8 @@ public class EndpointsTests : IClassFixture<CustomWebApplicationFactory>
     [Fact]
     public async Task ShouldReturnCreatedStatus_WhenInvoiceDataAreEquivalentToRetunedObject()
     {
+        await _factory.ResetDatabaseAsync();
         var client = _factory.CreateClient();
-        using var scope = _factory.Services.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         
         var invoiceRequest = new InvoiceRequest(
             123,
@@ -131,6 +162,7 @@ public class EndpointsTests : IClassFixture<CustomWebApplicationFactory>
     [Fact]
     public async Task ShouldReturnCreatedStatus_WhenResponseHttpHeaderLocationEndWithInvoiceLink()
     {
+        await _factory.ResetDatabaseAsync();
         var client = _factory.CreateClient();
         var invoiceRequest = new InvoiceRequest(
             123,
@@ -144,7 +176,7 @@ public class EndpointsTests : IClassFixture<CustomWebApplicationFactory>
             }
         );
         
-        var response = await client.PostAsJsonAsync("api/v1/invoices", invoiceRequest);
+        var response = await client.PostAsJsonAsync("/api/v1/invoices", invoiceRequest);
         
         var options = new JsonSerializerOptions
         {
@@ -161,6 +193,7 @@ public class EndpointsTests : IClassFixture<CustomWebApplicationFactory>
     [Fact]
     public async Task ShouldReturnBadRequest_WhenCustomerIdIsZero()
     {
+        await _factory.ResetDatabaseAsync();
         var client = _factory.CreateClient();
         
         var invoice = new InvoiceRequest(
@@ -182,6 +215,7 @@ public class EndpointsTests : IClassFixture<CustomWebApplicationFactory>
     [Fact]
     public async Task ShouldReturnBadRequest_WhenInvoiceItemsIsEmpty()
     {
+        await _factory.ResetDatabaseAsync();
         var client = _factory.CreateClient();
         var invoice = new InvoiceRequest(
             0,
@@ -196,6 +230,7 @@ public class EndpointsTests : IClassFixture<CustomWebApplicationFactory>
     [Fact]
     public async Task ShouldReturnBadRequest_WhenInvoiceIsNull()
     {
+        await _factory.ResetDatabaseAsync();
         var client = _factory.CreateClient();
         
         var response = await client.PostAsJsonAsync("/api/v1/invoices", (InvoiceRequest?)null);
