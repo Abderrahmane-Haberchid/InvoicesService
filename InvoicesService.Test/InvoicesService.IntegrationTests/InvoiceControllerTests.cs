@@ -2,11 +2,11 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Application.Features.CreateInvoice.Dtos.requests;
 using FluentAssertions;
 using InvoicesService.DbContext;
-using InvoicesService.Enums;
-using InvoicesService.Features.CreateInvoice.Dtos.requests;
 using InvoicesService.Features.CreateInvoice.Dtos.responses;
+using InvoicesService.Shared.Enums;
 using MassTransit.EntityFrameworkCoreIntegration;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -27,6 +27,7 @@ public class InvoiceControllerTests : IClassFixture<CustomWebApplicationFactory>
     {
         await _factory.ResetDatabaseAsync();
         var client = _factory.CreateClient();
+        
         var invoice = new InvoiceRequest(
             123,
             CurrencyType.USD,
