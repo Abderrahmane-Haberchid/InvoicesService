@@ -1,6 +1,6 @@
-using InvoicesService.Shared.Enums;
+using Domain.Enums;
 
-namespace InvoicesService.Features.CreateInvoice.Dtos.responses;
+namespace Application.Features.CreateInvoice.Dtos.responses;
 
 public record InvoiceResponseDto(
     Guid InvoiceId, 

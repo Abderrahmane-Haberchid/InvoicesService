@@ -3,7 +3,6 @@ using Asp.Versioning;
 using Domain.Respository;
 using Infrastructure;
 using Infrastructure.Persistance;
-using InvoiceService.Infrastructure.Persistance;
 using InvoicesService.Exceptions;
 using Microsoft.EntityFrameworkCore;
 

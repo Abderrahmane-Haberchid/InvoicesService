@@ -1,8 +1,7 @@
 using Application.Features.CreateInvoice.Dtos.requests;
-using InvoicesService.Features.CreateInvoice.Dtos;
-using InvoicesService.Features.CreateInvoice.Dtos.responses;
+using Application.Features.CreateInvoice.Dtos.responses;
 
-namespace InvoicesService.Features.CreateInvoice.Services;
+namespace Application.Features.CreateInvoice.Services;
 
 public interface IInvoiceService
 {

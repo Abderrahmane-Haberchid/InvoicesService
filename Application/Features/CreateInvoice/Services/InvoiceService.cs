@@ -1,15 +1,15 @@
 using System.Data;
 using Application.Features.CreateInvoice.Dtos.requests;
+using Application.Features.CreateInvoice.Dtos.responses;
 using Application.Features.CreateInvoice.Validators;
+using Domain.Models;
+using Domain.Respository;
 using FluentValidation;
-using InvoicesService.Domain.Models;
-using InvoicesService.Features.CreateInvoice.Dtos.responses;
-using InvoicesService.Features.CreateInvoice.Validators;
-using InvoicesService.Respository;
 using InvoicesService.Shared.Events;
 using MassTransit;
+using Microsoft.Extensions.Logging;
 
-namespace InvoicesService.Features.CreateInvoice.Services;
+namespace Application.Features.CreateInvoice.Services;
 
 public class InvoiceService(
     IInvoiceRepository invoiceRepository,
@@ -23,6 +23,7 @@ public class InvoiceService(
         CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(invoiceRequest);
+        
         await invoiceRequestValidator.ValidateAndThrowAsync(invoiceRequest, cancellationToken);
         
         logger.LogInformation("Invoice for customer {id} start processing in invoice service", 

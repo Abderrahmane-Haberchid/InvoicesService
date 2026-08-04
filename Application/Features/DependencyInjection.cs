@@ -1,5 +1,5 @@
+using Application.Features.CreateInvoice.Services;
 using Application.Features.CreateInvoice.Validators;
-using InvoicesService.Features.CreateInvoice.Services;
 using InvoicesService.Features.CreateInvoice.Validators;
 using Microsoft.Extensions.DependencyInjection;
 

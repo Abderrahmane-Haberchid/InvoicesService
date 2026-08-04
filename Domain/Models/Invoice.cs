@@ -47,7 +47,7 @@ public class Invoice
 
         var invoiceId = Guid.NewGuid();
         
-        return new Invoice(invoiceId, companyId, customerId, currency, 0.0m, DateTime.Now, InvoiceStatus.CREATED);
+        return new Invoice(invoiceId, companyId, customerId, currency, 0.0m, DateTime.UtcNow, InvoiceStatus.CREATED);
     }
 
     public void AddInvoiceItem(int productId, int quantity, decimal unitPrice)

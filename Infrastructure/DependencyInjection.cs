@@ -2,6 +2,7 @@ using Application.Features.GenerateInvoice.Services;
 using Infrastructure.Persistance;
 using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
@@ -15,6 +16,12 @@ public static class DependencyInjection
         this IServiceCollection services, 
         IConfiguration configuration)
     {
+
+        services.AddDbContext<AppDbContext>(options =>
+        {
+            options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"));
+        });
+        
         services.AddMassTransit(busConfiguration =>
         {
             busConfiguration.AddEntityFrameworkOutbox<AppDbContext>(options =>

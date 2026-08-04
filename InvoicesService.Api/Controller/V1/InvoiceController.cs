@@ -1,6 +1,6 @@
 using Application.Features.CreateInvoice.Dtos.requests;
+using Application.Features.CreateInvoice.Services;
 using Asp.Versioning;
-using InvoicesService.Features.CreateInvoice.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace InvoicesService.Controller.V1;
