@@ -1,3 +1,4 @@
+using Application.Exceptions;
 using Domain.Models;
 using Domain.Respository;
 using Microsoft.EntityFrameworkCore;
@@ -41,14 +42,26 @@ public class InvoiceRepository(
             .FirstOrDefaultAsync(i => i.Id == invoiceId,  cancellationToken);
     }
 
-    public Task<List<Invoice>> GetAllInvoicesAsync(int take, int skip, CancellationToken cancellationToken)
+    private IQueryable<Invoice> GetInvoices()
     {
         return dbContext.Invoices
             .AsNoTracking()
             .Include(i => i.Items)
-            .Take(take)
-            .Skip(skip)
+            .AsQueryable();
+    }
+    public Task<List<Invoice>> GetAllInvoicesAsync(int? page, int? pageSize, CancellationToken cancellationToken)
+    {
+        
+        if (!page.HasValue || !pageSize.HasValue)
+        {
+            return GetInvoices().ToListAsync(cancellationToken);
+        }
+        
+        return  GetInvoices()
+            .Skip((page.Value - 1) * pageSize.Value)
+            .Take(pageSize.Value)
             .ToListAsync(cancellationToken);
+        
     }
 
     public async Task SaveChangeAsync(CancellationToken cancellationToken)

@@ -1,13 +1,11 @@
-using InvoicesService.Features.GenerateInvoice.Services;
 using InvoicesService.Shared.Events;
 using MassTransit;
 using Microsoft.Extensions.Logging;
 
-namespace Application.Features.GenerateInvoice.Services;
+namespace Application.Features.GenerateInvoice;
 
-public class InvoiceGenerator(
-    ILogger<InvoiceGenerator> logger) : 
-    IInvoiceGenerator, IConsumer<InvoiceCreatedEvent>
+public class Handler(
+    ILogger<Handler> logger) : IConsumer<InvoiceCreatedEvent>
 {
     public async Task InvoiceGeneratorAsync(Guid invoiceId, CancellationToken cancellationToken)
     {

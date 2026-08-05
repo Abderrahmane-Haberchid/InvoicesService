@@ -1,8 +1,9 @@
-using Application.Features.GenerateInvoice.Services;
+using Application.Features.GenerateInvoice;
 using Infrastructure.Persistance;
 using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
@@ -30,13 +31,15 @@ public static class DependencyInjection
                 options.UseBusOutbox();
                 options.DisableInboxCleanupService();
             });
+            
             busConfiguration.SetKebabCaseEndpointNameFormatter();
+            
             busConfiguration.AddConfigureEndpointsCallback((context, name, cfg) =>
             {
                 cfg.UseEntityFrameworkOutbox<AppDbContext>(context);
             });
         
-            busConfiguration.AddConsumer<InvoiceGenerator>();
+            busConfiguration.AddConsumer<Handler>();
     
             busConfiguration.UsingRabbitMq((context, cfg) =>
             {
@@ -66,6 +69,20 @@ public static class DependencyInjection
             });
 
         services.AddAuthorization();
+        
+        services.AddStackExchangeRedisCache(options =>
+        {
+            options.Configuration =  configuration["Redis:Configuration"];
+        });
+
+        services.AddHybridCache(options =>
+        {
+            options.DefaultEntryOptions = new HybridCacheEntryOptions
+            {
+                Expiration = TimeSpan.FromMinutes(5),
+                LocalCacheExpiration = TimeSpan.FromMinutes(1)
+            };
+        });
 
         return services;
     }

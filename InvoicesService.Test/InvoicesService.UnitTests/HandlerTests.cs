@@ -1,6 +1,4 @@
-using Application.Features.CreateInvoice.Dtos.requests;
-using Application.Features.CreateInvoice.Services;
-using Application.Features.CreateInvoice.Validators;
+using Application.Features.CreateInvoice;
 using Domain.Enums;
 using Domain.Models;
 using Domain.Respository;
@@ -13,14 +11,14 @@ using Moq;
 
 namespace InvoicesServiceTest.InvoicesService.UnitTests;
 
-public class InvoiceServiceTests
+public class HandlerTests
 {
-    private readonly InvoiceService _sut;
+    private readonly Handler _sut;
     private readonly Mock<IInvoiceRepository> _invoiceRepositoryMock;
     private readonly Mock<IPublishEndpoint> _publishEndpointMock;
-    private readonly InvoiceRequestValidator _invoiceRequestValidator;
+    private readonly Validator _validator;
 
-    public InvoiceServiceTests()
+    public HandlerTests()
     {
         _invoiceRepositoryMock = new Mock<IInvoiceRepository>();
         _publishEndpointMock = new Mock<IPublishEndpoint>();
@@ -36,19 +34,19 @@ public class InvoiceServiceTests
             .Setup(x => x.SaveChangeAsync(CancellationToken.None))
             .Returns(Task.CompletedTask);
         
-        _invoiceRequestValidator = new InvoiceRequestValidator();
+        _validator = new Validator();
         
-        _sut = new InvoiceService(
+        _sut = new Handler(
             _invoiceRepositoryMock.Object,
-            _invoiceRequestValidator,
+            _validator,
             _publishEndpointMock.Object,
-            NullLogger<InvoiceService>.Instance);
+            NullLogger<Handler>.Instance);
     }
 
     [Fact]
     public async Task CreateAsync_ShouldFindOneItem_WhenProductIdIsDuplicated()
     {
-        var invoiceDto = new InvoiceRequest(
+        var invoiceDto = new Command(
             123,
             Guid.NewGuid(),
             CurrencyType.EUR,
@@ -66,7 +64,7 @@ public class InvoiceServiceTests
     [Fact]
     public async Task CreateAsync_ShouldFindThreeItem_WhenProductIdIsDuplicated()
     {
-        var invoiceDto = new InvoiceRequest(
+        var invoiceDto = new Command(
             123,
             Guid.NewGuid(),
             CurrencyType.EUR,
@@ -86,7 +84,7 @@ public class InvoiceServiceTests
     [Fact]
     public async Task CreateAsync_ShouldReturnTrue_WhenPublishEndpointIsInvoked()
     {
-        var invoiceDto = new InvoiceRequest(
+        var invoiceDto = new Command(
             123,
             Guid.NewGuid(),
             CurrencyType.EUR,
@@ -112,7 +110,7 @@ public class InvoiceServiceTests
     public async Task CreateAsync_ShouldCreateInvoice_WhenInvoiceIsCreated()
     {
         
-        var invoiceDto = new InvoiceRequest(
+        var invoiceDto = new Command(
             123,
             Guid.NewGuid(),
             CurrencyType.EUR,
@@ -144,7 +142,7 @@ public class InvoiceServiceTests
 
     [Fact] public async Task CreateAsync_ShouldReturnCreatedInvoice_WhenInvoiceMappingOfInvoiceItemDtoToInvoiceItemDone()
     {
-        var invoiceDto = new InvoiceRequest(
+        var invoiceDto = new Command(
             123, 
             Guid.NewGuid(),
             CurrencyType.EUR,
@@ -178,7 +176,7 @@ public class InvoiceServiceTests
     {
         // Arrange
         var invoiceDto = 
-            new InvoiceRequest(
+            new Command(
                 0, 
                 Guid.NewGuid(), 
                 CurrencyType.EUR, 
@@ -192,14 +190,14 @@ public class InvoiceServiceTests
     [Fact]
     public async Task CreateAsync_ShouldThrowValidationException_WhenCustomerIdIsZero()
     {
-        var invoiceItemsDto = new List<InvoiceItemRequest>
+        var invoiceItemsDto = new List<InvoiceItemCommand>
         {
             new (123, 5, 400),
             new (123, 5, 400),
             new (123, 5, 400),
         };
         
-        var invoiceDto = new InvoiceRequest(
+        var invoiceDto = new Command(
             0,
             Guid.NewGuid(),
             CurrencyType.EUR, invoiceItemsDto);
@@ -211,7 +209,7 @@ public class InvoiceServiceTests
     [Fact]
     public async Task CreateAsync_ShouldThrowValidationException_WhenInvoiceRequestItemIsEmpty()
     {
-        var invoiceDto = new InvoiceRequest(
+        var invoiceDto = new Command(
             10, Guid.NewGuid(),
             CurrencyType.EUR, 
             []);
@@ -222,7 +220,7 @@ public class InvoiceServiceTests
     [Fact]
     public async Task CreateAsync_ShouldThrowValidationException_WhenCompanyIdIsEmpty()
     {
-        var invoiceDto = new InvoiceRequest(
+        var invoiceDto = new Command(
             10, 
             Guid.Empty, 
             CurrencyType.EUR,
@@ -234,7 +232,7 @@ public class InvoiceServiceTests
     [Fact]
     public async Task CreateAsync_ShouldInvokeIPublishEndpoint_WhenPublishEndpointIsCalled()
     {
-        var invoiceDto = new InvoiceRequest(
+        var invoiceDto = new Command(
             123,
             Guid.NewGuid(),
             CurrencyType.EUR,

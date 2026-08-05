@@ -2,6 +2,18 @@ version: "3.9"
 
 services:
 
+  redis:
+    image: redis:8
+    container_name: redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    environment:
+      - Redis__ConnectionStrings: ${REDIS_URL}
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes
+
   postgres:
     image: postgres:17-alpine
     container_name: postgres
@@ -90,6 +102,7 @@ volumes:
   postgres-data:
   pgadmin-data:
   rabbitmq-data:
+  redis-data:
 
 networks:
   invoices-network:

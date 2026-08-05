@@ -1,5 +1,4 @@
-using Application.Features.CreateInvoice.Dtos.requests;
-using Application.Features.CreateInvoice.Services;
+using Application.Features.CreateInvoice;
 using Application.Features.GetInvoices;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Mvc;
@@ -10,18 +9,18 @@ namespace InvoicesService.Controller.V1;
 [ApiController]
 [Route("api/v{apiVersion:apiVersion}/invoices")]
 public class InvoiceController(
-    IInvoiceService invoiceService,
-    IGetInvoicesService getInvoicesService,
+    ICreateInvoiceHandler createInvoiceHandler,
+    IGetInvoicesHandler getInvoicesHandler,
     ILogger<InvoiceController> logger) 
     : ControllerBase
 {
 
     [HttpPost]
     public async Task<IActionResult> Create(
-        [FromBody] InvoiceRequest invoiceRequest, 
+        [FromBody] Command command, 
         CancellationToken cancellationToken)
     {
-        var invoiceResponse = await invoiceService.CreateAsync(invoiceRequest, cancellationToken);
+        var invoiceResponse = await createInvoiceHandler.CreateAsync(command, cancellationToken);
         
         return Created($"api/v1/invoices/{invoiceResponse.InvoiceId}", invoiceResponse);
     }
@@ -29,24 +28,24 @@ public class InvoiceController(
     [HttpGet("{customerId:int}")]
     public async Task<IActionResult> GetByCustomerId(int customerId, CancellationToken cancellationToken)
     {
-        var invoices = await getInvoicesService.GetInvoicesByCustomerIdAsync(customerId, cancellationToken);
+        var invoices = await getInvoicesHandler.GetInvoicesByCustomerIdAsync(customerId, cancellationToken);
         return Ok(invoices);
     }
     
     [HttpGet("{invoiceId:guid}")]
     public async Task<IActionResult> GetByInvoiceId(Guid invoiceId, CancellationToken cancellationToken)
     {
-        var invoice = await getInvoicesService.GetInvoiceByInvoiceIdAsync(invoiceId, cancellationToken);
+        var invoice = await getInvoicesHandler.GetInvoiceByInvoiceIdAsync(invoiceId, cancellationToken);
         return Ok(invoice);
     }
 
-    [HttpGet("size={take:int}&skip={skip:int}")]
+    [HttpGet]
     public async Task<IActionResult> GetAll(
-        [FromQuery] int take, 
-        [FromQuery] int skip, 
+        int? page, 
+        int? pageSize, 
         CancellationToken cancellationToken)
     {
-        var invoices = await getInvoicesService.GetAllInvoicesAsync(take, skip, cancellationToken);
+        var invoices = await getInvoicesHandler.GetAllInvoicesAsync(page, pageSize, cancellationToken);
         return Ok(invoices);
     }
 }
