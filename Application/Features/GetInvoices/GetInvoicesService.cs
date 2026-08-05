@@ -47,9 +47,7 @@ public class GetInvoicesService(
         {
             throw new KeyNotFoundException($"No invoice found with Id :  '{invoiceId}'");
         }
-        logger.LogInformation($"========================================================================");
-        logger.LogInformation($"This invoice contain: {invoice.GetItems().Count} Items" );
-        logger.LogInformation($"========================================================================");
+        
         return new InvoiceResponseDto(
             invoice.Id, 
             invoice.Status, 
