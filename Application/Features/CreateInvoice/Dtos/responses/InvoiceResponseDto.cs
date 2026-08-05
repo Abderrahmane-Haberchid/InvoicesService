@@ -7,5 +7,6 @@ public record InvoiceResponseDto(
     InvoiceStatus Status,
     decimal TotalAmount,
     CurrencyType Currency,
-    DateTime CreatedAt
-);
+    DateTime CreatedAt,
+    List<InvoiceItemResponse> InvoiceItems
+    );

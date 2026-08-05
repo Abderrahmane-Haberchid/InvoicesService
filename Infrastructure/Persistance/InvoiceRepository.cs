@@ -1,5 +1,6 @@
 using Domain.Models;
 using Domain.Respository;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace Infrastructure.Persistance;
@@ -21,6 +22,33 @@ public class InvoiceRepository(
 
         logger.LogInformation("2. invoice saved {invoice} to database", invoice.Id);
         return saved.Entity;
+    }
+
+    public Task<List<Invoice>> GetInvoiceByCustomerIdAsync(int customerId, CancellationToken cancellationToken)
+    {
+        return dbContext.Invoices
+            .AsNoTracking()
+            .Include(i => i.Items)
+            .Where(i => i.CustomerId == customerId)
+            .ToListAsync(cancellationToken);
+    }
+
+    public Task<Invoice?> GetInvoiceByIdAsync(Guid invoiceId, CancellationToken cancellationToken)
+    {
+        return dbContext.Invoices
+            .AsNoTracking()
+            .Include(i => i.Items)
+            .FirstOrDefaultAsync(i => i.Id == invoiceId,  cancellationToken);
+    }
+
+    public Task<List<Invoice>> GetAllInvoicesAsync(int take, int skip, CancellationToken cancellationToken)
+    {
+        return dbContext.Invoices
+            .AsNoTracking()
+            .Include(i => i.Items)
+            .Take(take)
+            .Skip(skip)
+            .ToListAsync(cancellationToken);
     }
 
     public async Task SaveChangeAsync(CancellationToken cancellationToken)

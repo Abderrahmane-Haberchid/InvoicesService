@@ -1,6 +1,5 @@
-using DotNet.Testcontainers.Builders;
-using InvoicesService.DbContext;
-using MassTransit;
+
+using Infrastructure.Persistance;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;

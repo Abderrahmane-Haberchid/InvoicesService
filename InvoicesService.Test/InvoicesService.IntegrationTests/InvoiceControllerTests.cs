@@ -4,9 +4,9 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Application.Features.CreateInvoice.Dtos.requests;
 using Application.Features.CreateInvoice.Dtos.responses;
+using Domain.Enums;
 using FluentAssertions;
-using InvoicesService.DbContext;
-using InvoicesService.Shared.Enums;
+using Infrastructure.Persistance;
 using MassTransit.EntityFrameworkCoreIntegration;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -30,14 +30,14 @@ public class InvoiceControllerTests : IClassFixture<CustomWebApplicationFactory>
         
         var invoice = new InvoiceRequest(
             123,
+            Guid.NewGuid(),
             CurrencyType.USD,
-            new List<InvoiceItemRequest>
-            {
-                new (1111, 10, 230),
-                new (1114, 10, 230),
-                new (1113, 10, 230),
-                new (1112, 10, 230),
-            }
+            [
+                new(1111, 10, 230),
+                new(1114, 10, 230),
+                new(1113, 10, 230),
+                new(1112, 10, 230)
+            ]
         );
         
         await client.PostAsJsonAsync("/api/v1/invoices", invoice);
@@ -60,6 +60,7 @@ public class InvoiceControllerTests : IClassFixture<CustomWebApplicationFactory>
         
         var invoice = new InvoiceRequest(
             123,
+            Guid.NewGuid(),
             CurrencyType.USD,
             new List<InvoiceItemRequest>
             {
@@ -85,6 +86,7 @@ public class InvoiceControllerTests : IClassFixture<CustomWebApplicationFactory>
         
         var invoiceRequest = new InvoiceRequest(
             123,
+            Guid.NewGuid(),
             CurrencyType.USD,
             new List<InvoiceItemRequest>
             {
@@ -133,6 +135,7 @@ public class InvoiceControllerTests : IClassFixture<CustomWebApplicationFactory>
         
         var invoiceRequest = new InvoiceRequest(
             123,
+            Guid.NewGuid(),
             CurrencyType.USD,
             new List<InvoiceItemRequest>
             {
@@ -167,6 +170,7 @@ public class InvoiceControllerTests : IClassFixture<CustomWebApplicationFactory>
         var client = _factory.CreateClient();
         var invoiceRequest = new InvoiceRequest(
             123,
+            Guid.NewGuid(),
             CurrencyType.USD,
             new List<InvoiceItemRequest>
             {
@@ -199,6 +203,7 @@ public class InvoiceControllerTests : IClassFixture<CustomWebApplicationFactory>
         
         var invoice = new InvoiceRequest(
             0,
+            Guid.NewGuid(),
             CurrencyType.USD,
             new List<InvoiceItemRequest>
             {
@@ -220,8 +225,9 @@ public class InvoiceControllerTests : IClassFixture<CustomWebApplicationFactory>
         var client = _factory.CreateClient();
         var invoice = new InvoiceRequest(
             0,
+            Guid.NewGuid(),
             CurrencyType.USD,
-            new List<InvoiceItemRequest>()
+            []
         );
         
         var response = await client.PostAsJsonAsync("/api/v1/invoices", invoice);

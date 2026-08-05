@@ -18,21 +18,21 @@ public class Invoice
     public InvoiceStatus Status { get; private set; }
 
     private Invoice(
-        Guid Id, 
-        Guid CompanyId, 
-        int  CustomerId,
-        CurrencyType Currency, 
-        decimal Total, 
-        DateTime CreatedAt, 
-        InvoiceStatus Status)
+        Guid id, 
+        Guid companyId, 
+        int  customerId,
+        CurrencyType currency, 
+        decimal total, 
+        DateTime createdAt, 
+        InvoiceStatus status)
     {
-        this.Id = Id;
-        this.CompanyId = CompanyId;
-        this.CustomerId = CustomerId;
-        this.Currency = Currency;
-        this.Total = Total;
-        this.CreatedAt = CreatedAt;
-        this.Status = Status;
+        this.Id = id;
+        this.CompanyId = companyId;
+        this.CustomerId = customerId;
+        this.Currency = currency;
+        this.Total = total;
+        this.CreatedAt = createdAt;
+        this.Status = status;
     }
 
     public static Invoice Create(
@@ -69,6 +69,16 @@ public class Invoice
     private decimal CalculateTotal()
     {
         return _items.Sum(item => item.Quantity * item.UnitPrice);
+    }
+    
+    public InvoiceItem? GetItem(int itemId)
+    {
+        return _items.FirstOrDefault(i => i.ProductId == itemId);
+    }
+
+    public IReadOnlyCollection<InvoiceItem> GetItems()
+    {
+        return _items;
     }
 
 }

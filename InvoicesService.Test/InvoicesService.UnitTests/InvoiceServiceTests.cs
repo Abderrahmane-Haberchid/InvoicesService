@@ -1,12 +1,11 @@
 using Application.Features.CreateInvoice.Dtos.requests;
+using Application.Features.CreateInvoice.Services;
 using Application.Features.CreateInvoice.Validators;
+using Domain.Enums;
+using Domain.Models;
+using Domain.Respository;
 using FluentAssertions;
 using FluentValidation;
-using InvoicesService.DbContext;
-using InvoicesService.Domain.Models;
-using InvoicesService.Features.CreateInvoice.Validators;
-using InvoicesService.Respository;
-using InvoicesService.Shared.Enums;
 using InvoicesService.Shared.Events;
 using MassTransit;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -47,10 +46,49 @@ public class InvoiceServiceTests
     }
 
     [Fact]
+    public async Task CreateAsync_ShouldFindOneItem_WhenProductIdIsDuplicated()
+    {
+        var invoiceDto = new InvoiceRequest(
+            123,
+            Guid.NewGuid(),
+            CurrencyType.EUR,
+            [
+                new(123, 5, 400),
+                new(123, 5, 400),
+                new(123, 5, 400)
+            ]);
+        
+        var result = await _sut.CreateAsync(invoiceDto, CancellationToken.None);
+        
+        result.InvoiceItems.Should().HaveCount(1);
+    }
+    
+    [Fact]
+    public async Task CreateAsync_ShouldFindThreeItem_WhenProductIdIsDuplicated()
+    {
+        var invoiceDto = new InvoiceRequest(
+            123,
+            Guid.NewGuid(),
+            CurrencyType.EUR,
+            [
+                new(123, 5, 400),
+                new(111, 5, 400),
+                new(222, 5, 400),
+                new(222, 5, 400),
+                new(222, 5, 400)
+            ]);
+        
+        var result = await _sut.CreateAsync(invoiceDto, CancellationToken.None);
+        
+        result.InvoiceItems.Should().HaveCount(3);
+    }
+
+    [Fact]
     public async Task CreateAsync_ShouldReturnTrue_WhenPublishEndpointIsInvoked()
     {
         var invoiceDto = new InvoiceRequest(
-            123, 
+            123,
+            Guid.NewGuid(),
             CurrencyType.EUR,
             [
                 new(123, 5, 400),
@@ -75,7 +113,8 @@ public class InvoiceServiceTests
     {
         
         var invoiceDto = new InvoiceRequest(
-            123, 
+            123,
+            Guid.NewGuid(),
             CurrencyType.EUR,
             [
                 new(123, 5, 400),
@@ -88,7 +127,8 @@ public class InvoiceServiceTests
         _invoiceRepositoryMock.Verify(x => 
                 x.CreateInvoiceAsync(
                     It.Is<Invoice>(i => i.CustomerId ==  invoiceDto.CustomerId && 
-                                        i.Items.Count == invoiceDto.Items.Count &&
+                                        i.CompanyId == invoiceDto.CompanyId &&
+                                        i.GetItems().Count() == invoiceDto.Items.Count &&
                                         i.Status == InvoiceStatus.CREATED), 
                     It.IsAny<CancellationToken>()), 
             Times.Once);
@@ -102,10 +142,11 @@ public class InvoiceServiceTests
         result.Status.Should().Be(InvoiceStatus.CREATED);
     }
 
-    [Fact] public async Task CreateAsync_ShouldReturnCreatedInvoice_WhenInvoiceMappingOfInvoiceItemDtotoInvoiceItemDone()
+    [Fact] public async Task CreateAsync_ShouldReturnCreatedInvoice_WhenInvoiceMappingOfInvoiceItemDtoToInvoiceItemDone()
     {
         var invoiceDto = new InvoiceRequest(
             123, 
+            Guid.NewGuid(),
             CurrencyType.EUR,
             [
                 new(123, 5, 400),
@@ -118,9 +159,9 @@ public class InvoiceServiceTests
         _invoiceRepositoryMock.Verify(x => 
             x.CreateInvoiceAsync(
                 It.Is<Invoice>(i => 
-                    i.Items[0].ProductId == invoiceDto.Items[0].ProductId &&
-                    i.Items[0].Quantity ==  invoiceDto.Items[0].Quantity &&
-                    i.Items[0].UnitPrice ==  invoiceDto.Items[0].UnitPrice),
+                    i.GetItem(0).ProductId == invoiceDto.Items[0].ProductId &&
+                    i.GetItem(0).Quantity ==  invoiceDto.Items[0].Quantity &&
+                    i.GetItem(0).UnitPrice ==  invoiceDto.Items[0].UnitPrice),
                 It.IsAny<CancellationToken>()
                 ), Times.Once);
     }
@@ -137,7 +178,11 @@ public class InvoiceServiceTests
     {
         // Arrange
         var invoiceDto = 
-            new InvoiceRequest(0, CurrencyType.EUR, new List<InvoiceItemRequest>());
+            new InvoiceRequest(
+                0, 
+                Guid.NewGuid(), 
+                CurrencyType.EUR, 
+                []);
         
         // Act + Assert
         await Assert.ThrowsAsync<ValidationException>(() =>
@@ -154,7 +199,10 @@ public class InvoiceServiceTests
             new (123, 5, 400),
         };
         
-        var invoiceDto = new InvoiceRequest(0, CurrencyType.EUR, invoiceItemsDto);
+        var invoiceDto = new InvoiceRequest(
+            0,
+            Guid.NewGuid(),
+            CurrencyType.EUR, invoiceItemsDto);
         
         await Assert.ThrowsAsync<ValidationException>(() => 
             _sut.CreateAsync(invoiceDto, CancellationToken.None));
@@ -163,7 +211,22 @@ public class InvoiceServiceTests
     [Fact]
     public async Task CreateAsync_ShouldThrowValidationException_WhenInvoiceRequestItemIsEmpty()
     {
-        var invoiceDto = new InvoiceRequest(10, CurrencyType.EUR, new List<InvoiceItemRequest>());
+        var invoiceDto = new InvoiceRequest(
+            10, Guid.NewGuid(),
+            CurrencyType.EUR, 
+            []);
+        
+        await Assert.ThrowsAsync<ValidationException>(() => _sut.CreateAsync(invoiceDto, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task CreateAsync_ShouldThrowValidationException_WhenCompanyIdIsEmpty()
+    {
+        var invoiceDto = new InvoiceRequest(
+            10, 
+            Guid.Empty, 
+            CurrencyType.EUR,
+            [new (123, 5, 400)]);
         
         await Assert.ThrowsAsync<ValidationException>(() => _sut.CreateAsync(invoiceDto, CancellationToken.None));
     }
@@ -172,7 +235,8 @@ public class InvoiceServiceTests
     public async Task CreateAsync_ShouldInvokeIPublishEndpoint_WhenPublishEndpointIsCalled()
     {
         var invoiceDto = new InvoiceRequest(
-            123, 
+            123,
+            Guid.NewGuid(),
             CurrencyType.EUR,
             [
                 new(123, 5, 400),

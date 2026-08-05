@@ -1,5 +1,6 @@
 using System.Data;
 using System.Net;
+using Application.Exceptions;
 using FluentValidation;
 using InvoicesService.Domain.DomainExceptions;
 using Microsoft.AspNetCore.Diagnostics;
@@ -27,6 +28,8 @@ public class GlobalExceptionHandler : IExceptionHandler
             InvalidInvoiceItemDataException => (HttpStatusCode.BadRequest, "Domain Exception: Invalid invoice item data"),
             
             InvalidInvoiceDataException => (HttpStatusCode.BadRequest, "Domain Exception: Invalid invoice data"),
+            
+            NullObjectReturnedFromCreateRepositoryException => (HttpStatusCode.BadRequest, "Invoice Creation Failed!"),
             
             _ => (HttpStatusCode.InternalServerError, "Internal server error")
         };

@@ -1,4 +1,5 @@
 using System.Data;
+using Application.Exceptions;
 using Application.Features.CreateInvoice.Dtos.requests;
 using Application.Features.CreateInvoice.Dtos.responses;
 using Application.Features.CreateInvoice.Validators;
@@ -41,7 +42,7 @@ public class InvoiceService(
         var savedInvoice = await invoiceRepository.CreateInvoiceAsync(invoice, cancellationToken);
 
         if (savedInvoice is null)
-            throw new DataException();
+            throw new NullObjectReturnedFromCreateRepositoryException("No Invoice Saved !");
 
         await publishEndpoint.Publish(new InvoiceCreatedEvent(
                 savedInvoice.Id,
@@ -56,7 +57,10 @@ public class InvoiceService(
             savedInvoice.Status,
             savedInvoice.Total,
             savedInvoice.Currency,
-            savedInvoice.CreatedAt  
+            savedInvoice.CreatedAt,
+            savedInvoice.GetItems()
+                .Select(i => new InvoiceItemResponse(i.ProductId, i.Quantity, i.UnitPrice))
+                .ToList()
         );
 
     }
