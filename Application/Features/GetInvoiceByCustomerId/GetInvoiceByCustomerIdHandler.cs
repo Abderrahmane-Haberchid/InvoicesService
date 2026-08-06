@@ -4,9 +4,9 @@ using MediatR;
 
 namespace Application.Features.GetInvoiceByCutomerId;
 
-public class Handler(IInvoiceRepository invoiceRepository) : IRequestHandler<Query, List<Response>>
+public class GetInvoiceByCustomerIdHandler(IInvoiceRepository invoiceRepository) : IRequestHandler<GetInvoiceByCustomerIdQuery, List<GetInvoiceByCustomerIdResponse>>
 {
-    public async Task<List<Response>> Handle(Query request, CancellationToken cancellationToken)
+    public async Task<List<GetInvoiceByCustomerIdResponse>> Handle(GetInvoiceByCustomerIdQuery request, CancellationToken cancellationToken)
     {
         if (request.CustomerId <= 0)
         {

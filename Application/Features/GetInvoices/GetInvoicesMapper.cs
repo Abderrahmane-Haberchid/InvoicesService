@@ -1,12 +1,12 @@
 using Domain.Models;
 
-namespace Application.Features.GetInvoiceByCutomerId;
+namespace Application.Features.GetInvoices;
 
-public static class Mapper
+public static class GetInvoicesMapper
 {
-    public static List<Response> ToResponses(this List<Invoice> invoices)
+    public static List<GetInvoicesResponse> ToResponses(this List<Invoice> invoices)
     {
-        return invoices.Select(i => new Response(
+        return invoices.Select(i => new GetInvoicesResponse(
                 i.Id,
                 i.Status,
                 i.Total,

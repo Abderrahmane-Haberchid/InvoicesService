@@ -4,8 +4,8 @@ using Microsoft.Extensions.Logging;
 
 namespace Application.Features.GenerateInvoice;
 
-public class Handler(
-    ILogger<Handler> logger) : IConsumer<InvoiceCreatedEvent>
+public class GenerateInvoiceHandler(
+    ILogger<GenerateInvoiceHandler> logger) : IConsumer<InvoiceCreatedEvent>
 {
     public async Task InvoiceGeneratorAsync(Guid invoiceId, CancellationToken cancellationToken)
     {

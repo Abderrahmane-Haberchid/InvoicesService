@@ -2,8 +2,8 @@ using FluentValidation;
 
 namespace Application.Features.CreateInvoice;
 
-public class Validator : AbstractValidator<Command>{
-    public Validator()
+public class CreateInvoiceValidator : AbstractValidator<CreateInvoiceCommand>{
+    public CreateInvoiceValidator()
     {
         RuleFor(x => x.CustomerId)
             .GreaterThan(0)

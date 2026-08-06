@@ -11,14 +11,14 @@ using Moq;
 
 namespace InvoicesServiceTest.InvoicesService.UnitTests;
 
-public class HandlerTests
+public class GetInvoiceByCustomerIdHandlerTests
 {
-    private readonly Handler _sut;
+    private readonly CreateInvoiceHandler _sut;
     private readonly Mock<IInvoiceRepository> _invoiceRepositoryMock;
     private readonly Mock<IPublishEndpoint> _publishEndpointMock;
-    private readonly Validator _validator;
+    private readonly CreateInvoiceValidator _createInvoiceValidator;
 
-    public HandlerTests()
+    public GetInvoiceByCustomerIdHandlerTests()
     {
         _invoiceRepositoryMock = new Mock<IInvoiceRepository>();
         _publishEndpointMock = new Mock<IPublishEndpoint>();
@@ -34,19 +34,19 @@ public class HandlerTests
             .Setup(x => x.SaveChangeAsync(CancellationToken.None))
             .Returns(Task.CompletedTask);
         
-        _validator = new Validator();
+        _createInvoiceValidator = new CreateInvoiceValidator();
         
-        _sut = new Handler(
+        _sut = new CreateInvoiceHandler(
             _invoiceRepositoryMock.Object,
-            _validator,
+            _createInvoiceValidator,
             _publishEndpointMock.Object,
-            NullLogger<Handler>.Instance);
+            NullLogger<CreateInvoiceHandler>.Instance);
     }
 
     [Fact]
     public async Task CreateAsync_ShouldFindOneItem_WhenProductIdIsDuplicated()
     {
-        var invoiceDto = new Command(
+        var invoiceDto = new CreateInvoiceCommand(
             123,
             Guid.NewGuid(),
             CurrencyType.EUR,
@@ -64,7 +64,7 @@ public class HandlerTests
     [Fact]
     public async Task CreateAsync_ShouldFindThreeItem_WhenProductIdIsDuplicated()
     {
-        var invoiceDto = new Command(
+        var invoiceDto = new CreateInvoiceCommand(
             123,
             Guid.NewGuid(),
             CurrencyType.EUR,
@@ -84,7 +84,7 @@ public class HandlerTests
     [Fact]
     public async Task CreateAsync_ShouldReturnTrue_WhenPublishEndpointIsInvoked()
     {
-        var invoiceDto = new Command(
+        var invoiceDto = new CreateInvoiceCommand(
             123,
             Guid.NewGuid(),
             CurrencyType.EUR,
@@ -110,7 +110,7 @@ public class HandlerTests
     public async Task CreateAsync_ShouldCreateInvoice_WhenInvoiceIsCreated()
     {
         
-        var invoiceDto = new Command(
+        var invoiceDto = new CreateInvoiceCommand(
             123,
             Guid.NewGuid(),
             CurrencyType.EUR,
@@ -142,7 +142,7 @@ public class HandlerTests
 
     [Fact] public async Task CreateAsync_ShouldReturnCreatedInvoice_WhenInvoiceMappingOfInvoiceItemDtoToInvoiceItemDone()
     {
-        var invoiceDto = new Command(
+        var invoiceDto = new CreateInvoiceCommand(
             123, 
             Guid.NewGuid(),
             CurrencyType.EUR,
@@ -176,7 +176,7 @@ public class HandlerTests
     {
         // Arrange
         var invoiceDto = 
-            new Command(
+            new CreateInvoiceCommand(
                 0, 
                 Guid.NewGuid(), 
                 CurrencyType.EUR, 
@@ -197,7 +197,7 @@ public class HandlerTests
             new (123, 5, 400),
         };
         
-        var invoiceDto = new Command(
+        var invoiceDto = new CreateInvoiceCommand(
             0,
             Guid.NewGuid(),
             CurrencyType.EUR, invoiceItemsDto);
@@ -209,7 +209,7 @@ public class HandlerTests
     [Fact]
     public async Task CreateAsync_ShouldThrowValidationException_WhenInvoiceRequestItemIsEmpty()
     {
-        var invoiceDto = new Command(
+        var invoiceDto = new CreateInvoiceCommand(
             10, Guid.NewGuid(),
             CurrencyType.EUR, 
             []);
@@ -220,7 +220,7 @@ public class HandlerTests
     [Fact]
     public async Task CreateAsync_ShouldThrowValidationException_WhenCompanyIdIsEmpty()
     {
-        var invoiceDto = new Command(
+        var invoiceDto = new CreateInvoiceCommand(
             10, 
             Guid.Empty, 
             CurrencyType.EUR,
@@ -232,7 +232,7 @@ public class HandlerTests
     [Fact]
     public async Task CreateAsync_ShouldInvokeIPublishEndpoint_WhenPublishEndpointIsCalled()
     {
-        var invoiceDto = new Command(
+        var invoiceDto = new CreateInvoiceCommand(
             123,
             Guid.NewGuid(),
             CurrencyType.EUR,

@@ -1,19 +1,19 @@
 
 using Domain.Models;
 
-namespace Application.Features.CreateInvoice;
+namespace Application.Features.GetInvoiceById;
 
-public static class Mapper
+public static class GetInvoiceByIdMapper
 {
-    public static Response ToResponse(this Invoice invoice)
+    public static GetInvoiceByIdResponse ToResponse(this Invoice invoice)
     {
-        return new Response(
+        return new GetInvoiceByIdResponse(
             invoice.Id,
             invoice.Status,
             invoice.Total,
             invoice.Currency,
             invoice.CreatedAt,
             invoice.GetItems().Select(item => new ItemResponse(item.ProductId, item.Quantity, item.UnitPrice)).ToList()
-            );
+        );
     }
 }

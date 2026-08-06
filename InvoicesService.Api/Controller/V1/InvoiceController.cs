@@ -17,23 +17,23 @@ public class InvoiceController(
 
     [HttpPost]
     public async Task<IActionResult> Create(
-        [FromBody] Command command, 
+        [FromBody] CreateInvoiceCommand createInvoiceCommand, 
         CancellationToken cancellationToken)
     {
-        var invoiceResponse = await sender.Send(command, cancellationToken);
+        var invoiceResponse = await sender.Send(createInvoiceCommand, cancellationToken);
         
         return Created($"api/v1/invoices/{invoiceResponse.InvoiceId}", invoiceResponse);
     }
 
     [HttpGet("{customerId:int}")]
-    public async Task<IActionResult> GetByCustomerId(Query request, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetByCustomerId(GetInvoiceByCustomerIdQuery request, CancellationToken cancellationToken)
     {
         var invoices = await mediator.Send(request, cancellationToken);
         return Ok(invoices);
     }
     
     [HttpGet("{invoiceId:guid}")]
-    public async Task<IActionResult> GetByInvoiceId(Query request, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetByInvoiceId(GetInvoiceByCustomerIdQuery request, CancellationToken cancellationToken)
     {
         var invoice = await getInvoicesHandler.GetInvoiceByInvoiceIdAsync(invoiceId, cancellationToken);
         return Ok(invoice);

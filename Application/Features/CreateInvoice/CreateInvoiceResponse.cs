@@ -2,7 +2,7 @@ using Domain.Enums;
 
 namespace Application.Features.CreateInvoice;
 
-public record Response(
+public record CreateInvoiceResponse(
     Guid InvoiceId, 
     InvoiceStatus Status,
     decimal TotalAmount,

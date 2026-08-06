@@ -9,15 +9,15 @@ using Microsoft.Extensions.Logging;
 
 namespace Application.Features.CreateInvoice;
 
-public class Handler(
+public class CreateInvoiceHandler(
     IInvoiceRepository invoiceRepository,
-    IValidator<Command> validator,
+    IValidator<CreateInvoiceCommand> validator,
     IPublishEndpoint publishEndpoint,
-    ILogger<Handler> logger) 
-    : IRequestHandler<Command, Response>
+    ILogger<CreateInvoiceHandler> logger) 
+    : IRequestHandler<CreateInvoiceCommand, CreateInvoiceResponse>
 {
 
-    public async Task<Response> Handle(Command request, CancellationToken cancellationToken)
+    public async Task<CreateInvoiceResponse> Handle(CreateInvoiceCommand request, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(request);
         

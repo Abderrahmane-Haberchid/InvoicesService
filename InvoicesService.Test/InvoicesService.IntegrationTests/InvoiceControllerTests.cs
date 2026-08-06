@@ -27,7 +27,7 @@ public class InvoiceControllerTests : IClassFixture<CustomWebApplicationFactory>
         await _factory.ResetDatabaseAsync();
         var client = _factory.CreateClient();
         
-        var invoice = new Command(
+        var invoice = new CreateInvoiceCommand(
             123,
             Guid.NewGuid(),
             CurrencyType.USD,
@@ -57,7 +57,7 @@ public class InvoiceControllerTests : IClassFixture<CustomWebApplicationFactory>
         await _factory.ResetDatabaseAsync();
         var client = _factory.CreateClient();
         
-        var invoice = new Command(
+        var invoice = new CreateInvoiceCommand(
             123,
             Guid.NewGuid(),
             CurrencyType.USD,
@@ -83,7 +83,7 @@ public class InvoiceControllerTests : IClassFixture<CustomWebApplicationFactory>
         using var scope = _factory.Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         
-        var invoiceRequest = new Command(
+        var invoiceRequest = new CreateInvoiceCommand(
             123,
             Guid.NewGuid(),
             CurrencyType.USD,
@@ -132,7 +132,7 @@ public class InvoiceControllerTests : IClassFixture<CustomWebApplicationFactory>
         await _factory.ResetDatabaseAsync();
         var client = _factory.CreateClient();
         
-        var invoiceRequest = new Command(
+        var invoiceRequest = new CreateInvoiceCommand(
             123,
             Guid.NewGuid(),
             CurrencyType.USD,
@@ -153,7 +153,7 @@ public class InvoiceControllerTests : IClassFixture<CustomWebApplicationFactory>
 
         options.Converters.Add(new JsonStringEnumConverter());
 
-        var body = await response.Content.ReadFromJsonAsync<Response>(options);
+        var body = await response.Content.ReadFromJsonAsync<CreateInvoiceResponse>(options);
         
         Assert.NotNull(body);
         body.Currency.Should().Be(invoiceRequest.Currency);
@@ -167,7 +167,7 @@ public class InvoiceControllerTests : IClassFixture<CustomWebApplicationFactory>
     {
         await _factory.ResetDatabaseAsync();
         var client = _factory.CreateClient();
-        var invoiceRequest = new Command(
+        var invoiceRequest = new CreateInvoiceCommand(
             123,
             Guid.NewGuid(),
             CurrencyType.USD,
@@ -189,7 +189,7 @@ public class InvoiceControllerTests : IClassFixture<CustomWebApplicationFactory>
 
         options.Converters.Add(new JsonStringEnumConverter());
         
-        var body = await response.Content.ReadFromJsonAsync<Response>(options);
+        var body = await response.Content.ReadFromJsonAsync<CreateInvoiceResponse>(options);
         Assert.NotNull(body);
         response?.Headers?.Location?.ToString().Should().EndWith($"api/v1/invoices/{body.InvoiceId}");
     }
@@ -200,7 +200,7 @@ public class InvoiceControllerTests : IClassFixture<CustomWebApplicationFactory>
         await _factory.ResetDatabaseAsync();
         var client = _factory.CreateClient();
         
-        var invoice = new Command(
+        var invoice = new CreateInvoiceCommand(
             0,
             Guid.NewGuid(),
             CurrencyType.USD,
@@ -222,7 +222,7 @@ public class InvoiceControllerTests : IClassFixture<CustomWebApplicationFactory>
     {
         await _factory.ResetDatabaseAsync();
         var client = _factory.CreateClient();
-        var invoice = new Command(
+        var invoice = new CreateInvoiceCommand(
             0,
             Guid.NewGuid(),
             CurrencyType.USD,
@@ -239,7 +239,7 @@ public class InvoiceControllerTests : IClassFixture<CustomWebApplicationFactory>
         await _factory.ResetDatabaseAsync();
         var client = _factory.CreateClient();
         
-        var response = await client.PostAsJsonAsync("/api/v1/invoices", (Command?)null);
+        var response = await client.PostAsJsonAsync("/api/v1/invoices", (CreateInvoiceCommand?)null);
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     } 
 }

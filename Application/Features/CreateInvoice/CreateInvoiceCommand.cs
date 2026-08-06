@@ -3,12 +3,12 @@ using MediatR;
 
 namespace Application.Features.CreateInvoice;
 
-public record Command(
+public record CreateInvoiceCommand(
     int CustomerId,
     Guid CompanyId,
     CurrencyType Currency,
     List<InvoiceItemCommand> Items
-) : IRequest<Response>;
+) : IRequest<CreateInvoiceResponse>;
 
 public record InvoiceItemCommand(
     int ProductId,

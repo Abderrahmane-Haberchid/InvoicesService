@@ -1,8 +1,8 @@
 using Domain.Enums;
 
-namespace Application.Features.GetInvoiceById;
+namespace Application.Features.GetInvoiceByCutomerId;
 
-public record Response(
+public record GetInvoiceByCustomerIdResponse(
     Guid InvoiceId, 
     InvoiceStatus Status,
     decimal TotalAmount,

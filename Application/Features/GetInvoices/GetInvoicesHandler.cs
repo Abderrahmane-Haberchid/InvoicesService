@@ -6,13 +6,13 @@ using Microsoft.Extensions.Logging;
 
 namespace Application.Features.GetInvoices;
 
-public class Handler(
+public class GetInvoicesHandler(
     IInvoiceRepository invoiceRepository,
     HybridCache  hybridCache,
-    ILogger<Handler> logger) : IRequestHandler<Query, List<Response>>
+    ILogger<GetInvoicesHandler> logger) : IRequestHandler<GetInvoicesQuery, List<GetInvoicesResponse>>
 {
 
-    public async Task<List<Response>> Handle(Query request, CancellationToken cancellationToken)
+    public async Task<List<GetInvoicesResponse>> Handle(GetInvoicesQuery request, CancellationToken cancellationToken)
     {
         if (request.Page <= 0 || request.PageSize <= 0)
         {

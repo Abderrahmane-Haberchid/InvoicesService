@@ -43,7 +43,7 @@ public static class DependencyInjection
                 cfg.UseEntityFrameworkOutbox<AppDbContext>(context);
             });
         
-            busConfiguration.AddConsumer<Handler>();
+            busConfiguration.AddConsumer<GenerateInvoiceHandler>();
     
             busConfiguration.UsingRabbitMq((context, cfg) =>
             {

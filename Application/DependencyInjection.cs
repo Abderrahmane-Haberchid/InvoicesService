@@ -15,7 +15,7 @@ public static class DependencyInjection
             cfg.RegisterServicesFromAssembly(typeof(DependencyInjection).Assembly);
         });
         
-        services.AddScoped<Validator>();
+        services.AddScoped<CreateInvoiceValidator>();
         services.AddScoped<InvoiceItemRequestValidator>();
         
         return services;
