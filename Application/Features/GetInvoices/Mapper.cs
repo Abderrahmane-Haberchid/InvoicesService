@@ -1,6 +1,6 @@
 using Domain.Models;
 
-namespace Application.Features.GetInvoiceByCutomerId;
+namespace Application.Features.GetInvoices;
 
 public static class Mapper
 {

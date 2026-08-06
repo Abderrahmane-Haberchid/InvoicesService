@@ -1,3 +1,4 @@
+
 using Domain.Respository;
 using MediatR;
 
@@ -19,6 +20,6 @@ public class Handler(IInvoiceRepository invoiceRepository) : IRequestHandler<Que
             throw new KeyNotFoundException("Invoices Not Found");
         }
 
-        return invoices.ToReponses();
+        return invoices.ToResponses();
     }
 }

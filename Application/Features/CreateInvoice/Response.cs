@@ -8,11 +8,11 @@ public record Response(
     decimal TotalAmount,
     CurrencyType Currency,
     DateTime CreatedAt,
-    List<InvoiceItemQuery> InvoiceItems
+    List<ItemResponse> InvoiceItems
     );
     
-public record InvoiceItemQuery(
+public record ItemResponse(
     int ProductId,
     int Quantity,
-    decimal unitPrice
+    decimal UnitPrice
 );

@@ -7,16 +7,16 @@ public class Handler(IInvoiceRepository invoiceRepository) : IRequestHandler<Que
 {
     public async Task<Response> Handle(Query request, CancellationToken cancellationToken)
     {
-        if (request.invoiceId == Guid.Empty)
+        if (request.InvoiceId == Guid.Empty)
         {
-            throw new ArgumentNullException(nameof(request.invoiceId), "Invoice Id should not be Empty");
+            throw new ArgumentNullException(nameof(request.InvoiceId), "Invoice Id should not be Empty");
         }
 
-        var invoice = await invoiceRepository.GetInvoiceByIdAsync(request.invoiceId, cancellationToken);
+        var invoice = await invoiceRepository.GetInvoiceByIdAsync(request.InvoiceId, cancellationToken);
 
         if (invoice is null)
         {
-            throw new KeyNotFoundException($"No invoice found with Id :  '{request.invoiceId}'");
+            throw new KeyNotFoundException($"No invoice found with Id :  '{request.InvoiceId}'");
         }
 
         return invoice.ToResponse();

@@ -1,4 +1,6 @@
+using Application.Abstractions;
 using Application.Features.GenerateInvoice;
+using Infrastructure.Caching;
 using Infrastructure.Persistance;
 using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -17,6 +19,8 @@ public static class DependencyInjection
         this IServiceCollection services, 
         IConfiguration configuration)
     {
+
+        //services.AddScoped<ICacheService, HybridCacheService>();
 
         services.AddDbContext<AppDbContext>(options =>
         {

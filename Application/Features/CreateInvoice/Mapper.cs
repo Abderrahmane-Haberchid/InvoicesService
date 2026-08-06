@@ -1,11 +1,10 @@
-using Application.Features.GetInvoiceById;
+
 using Domain.Models;
 
 namespace Application.Features.CreateInvoice;
 
 public static class Mapper
 {
-
     public static Response ToResponse(this Invoice invoice)
     {
         return new Response(
@@ -14,9 +13,7 @@ public static class Mapper
             invoice.Total,
             invoice.Currency,
             invoice.CreatedAt,
-            invoice.GetItems()
-                .Select(i => new InvoiceItemQuery(i.ProductId, i.Quantity, i.UnitPrice))
-                .ToList()
+            invoice.GetItems().Select(item => new ItemResponse(item.ProductId, item.Quantity, item.UnitPrice)).ToList()
             );
     }
 }

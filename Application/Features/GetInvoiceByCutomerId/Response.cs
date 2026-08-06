@@ -14,5 +14,5 @@ public record Response(
 public record ItemResponse(
     int ProductId,
     int Quantity,
-    decimal unitPrice
+    decimal UnitPrice
 );

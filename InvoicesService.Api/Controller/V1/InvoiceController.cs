@@ -1,6 +1,7 @@
 using Application.Features.CreateInvoice;
-using Application.Features.GetInvoices;
+using Application.Features.GetInvoiceByCutomerId;
 using Asp.Versioning;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 namespace InvoicesService.Controller.V1;
@@ -9,8 +10,7 @@ namespace InvoicesService.Controller.V1;
 [ApiController]
 [Route("api/v{apiVersion:apiVersion}/invoices")]
 public class InvoiceController(
-    ICreateInvoiceHandler createInvoiceHandler,
-    IGetInvoicesHandler getInvoicesHandler,
+    ISender sender,
     ILogger<InvoiceController> logger) 
     : ControllerBase
 {
@@ -20,20 +20,20 @@ public class InvoiceController(
         [FromBody] Command command, 
         CancellationToken cancellationToken)
     {
-        var invoiceResponse = await createInvoiceHandler.CreateAsync(command, cancellationToken);
+        var invoiceResponse = await sender.Send(command, cancellationToken);
         
         return Created($"api/v1/invoices/{invoiceResponse.InvoiceId}", invoiceResponse);
     }
 
     [HttpGet("{customerId:int}")]
-    public async Task<IActionResult> GetByCustomerId(int customerId, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetByCustomerId(Query request, CancellationToken cancellationToken)
     {
-        var invoices = await getInvoicesHandler.GetInvoicesByCustomerIdAsync(customerId, cancellationToken);
+        var invoices = await mediator.Send(request, cancellationToken);
         return Ok(invoices);
     }
     
     [HttpGet("{invoiceId:guid}")]
-    public async Task<IActionResult> GetByInvoiceId(Guid invoiceId, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetByInvoiceId(Query request, CancellationToken cancellationToken)
     {
         var invoice = await getInvoicesHandler.GetInvoiceByInvoiceIdAsync(invoiceId, cancellationToken);
         return Ok(invoice);
