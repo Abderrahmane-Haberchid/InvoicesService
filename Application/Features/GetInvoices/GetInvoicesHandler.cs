@@ -1,5 +1,7 @@
 
+using Application.Common;
 using Domain.Respository;
+using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Logging;
@@ -9,29 +11,36 @@ namespace Application.Features.GetInvoices;
 public class GetInvoicesHandler(
     IInvoiceRepository invoiceRepository,
     HybridCache  hybridCache,
-    ILogger<GetInvoicesHandler> logger) : IRequestHandler<GetInvoicesQuery, List<GetInvoicesResponse>>
+    IValidator<GetInvoicesQuery> getInvoicesQueryValidator,
+    ILogger<GetInvoicesHandler> logger) : IRequestHandler<GetInvoicesQuery, PagedList<GetInvoicesResponse>>
 {
 
-    public async Task<List<GetInvoicesResponse>> Handle(GetInvoicesQuery request, CancellationToken cancellationToken)
+    public async Task<PagedList<GetInvoicesResponse>> Handle(GetInvoicesQuery request, CancellationToken cancellationToken)
     {
-        if (request.Page <= 0 || request.PageSize <= 0)
-        {
-            throw new ArgumentNullException(nameof(request), "Page and PageSize should not be less than 0");
-        }
+        var result = await getInvoicesQueryValidator.ValidateAsync(request, cancellationToken);
+        if (!result.IsValid)
+            throw new ValidationException(result.Errors);
 
         var invoices = await hybridCache.GetOrCreateAsync(
-            $"invoices:{Guid.NewGuid()}",
+            $"cached-invoices-{request?.Page}-{request?.PageSize}",
             async ct =>
             {
-                Console.WriteLine("🔥 Database hit");
+                logger.LogInformation("==============================================================================================");
+                logger.LogInformation("=============================🔥 Database hit =================================================");
+                logger.LogInformation("==============================================================================================");
                 
-                return await invoiceRepository.GetAllInvoicesAsync(request.Page, request.PageSize, ct);
+                var entities =  await invoiceRepository
+                    .GetAllInvoicesAsync(request?.Page, request?.PageSize, ct);
+
+                return entities.ToResponses();
             },
             cancellationToken:  cancellationToken
             );
         
+        
+        
         return invoices.Count == 0 
             ? throw new KeyNotFoundException("No invoices found") 
-            : invoices.ToResponses();
+            : invoices.ToPagedList(request!.Page, request.PageSize);
     }
 }

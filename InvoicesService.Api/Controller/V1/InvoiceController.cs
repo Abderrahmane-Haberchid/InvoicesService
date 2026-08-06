@@ -1,5 +1,8 @@
 using Application.Features.CreateInvoice;
+using Application.Features.GetInvoiceByCustomerId;
 using Application.Features.GetInvoiceByCutomerId;
+using Application.Features.GetInvoiceById;
+using Application.Features.GetInvoices;
 using Asp.Versioning;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -26,26 +29,26 @@ public class InvoiceController(
     }
 
     [HttpGet("{customerId:int}")]
-    public async Task<IActionResult> GetByCustomerId(GetInvoiceByCustomerIdQuery request, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetByCustomerId(int customerId, CancellationToken cancellationToken)
     {
-        var invoices = await mediator.Send(request, cancellationToken);
+        var request = new GetInvoiceByCustomerIdQuery(customerId);
+        var invoices = await sender.Send(request, cancellationToken);
         return Ok(invoices);
     }
     
     [HttpGet("{invoiceId:guid}")]
-    public async Task<IActionResult> GetByInvoiceId(GetInvoiceByCustomerIdQuery request, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetByInvoiceId(Guid invoiceId, CancellationToken cancellationToken)
     {
-        var invoice = await getInvoicesHandler.GetInvoiceByInvoiceIdAsync(invoiceId, cancellationToken);
+        var request = new GetInvoiceByIdQuery(invoiceId);
+        var invoice = await sender.Send(request, cancellationToken);
         return Ok(invoice);
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll(
-        int? page, 
-        int? pageSize, 
-        CancellationToken cancellationToken)
+    public async Task<IActionResult> GetAll(int? page, int? pageSize, CancellationToken cancellationToken)
     {
-        var invoices = await getInvoicesHandler.GetAllInvoicesAsync(page, pageSize, cancellationToken);
+        var request = new GetInvoicesQuery(page ?? 1, pageSize ?? 50);
+        var invoices = await sender.Send(request, cancellationToken);
         return Ok(invoices);
     }
 }

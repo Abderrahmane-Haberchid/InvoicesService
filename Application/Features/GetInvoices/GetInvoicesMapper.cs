@@ -1,3 +1,4 @@
+using Application.Common;
 using Domain.Models;
 
 namespace Application.Features.GetInvoices;
@@ -16,5 +17,16 @@ public static class GetInvoicesMapper
                     .Select(ii => new ItemResponse(ii.ProductId, ii.Quantity, ii.UnitPrice))
                     .ToList()))
             .ToList();
+    }
+
+    public static PagedList<GetInvoicesResponse> ToPagedList(this List<GetInvoicesResponse> invoices, int page, int pageSize)
+    {
+        return new PagedList<GetInvoicesResponse>
+        {
+            Items = invoices,
+            TotalCount = invoices.Count,
+            PageSize = pageSize,
+            PageNumber = page
+        };
     }
 }

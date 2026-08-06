@@ -1,6 +1,6 @@
 
-using FluentValidation;
 using Application.Features.CreateInvoice;
+using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Application;
@@ -15,8 +15,7 @@ public static class DependencyInjection
             cfg.RegisterServicesFromAssembly(typeof(DependencyInjection).Assembly);
         });
         
-        services.AddScoped<CreateInvoiceValidator>();
-        services.AddScoped<InvoiceItemRequestValidator>();
+        services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly);
         
         return services;
     }

@@ -22,16 +22,16 @@ public class CreateInvoiceValidator : AbstractValidator<CreateInvoiceCommand>{
             .WithMessage("Items must not be empty");
         
         RuleForEach(x => x.Items)
-            .SetValidator(new InvoiceItemRequestValidator());
+            .SetValidator(new CreateInvoiceItemValidator());
         
         
         
     }
 }
 
-public class InvoiceItemRequestValidator : AbstractValidator<InvoiceItemCommand>
+public class CreateInvoiceItemValidator : AbstractValidator<InvoiceItemCommand>
 {
-    public InvoiceItemRequestValidator()
+    public CreateInvoiceItemValidator()
     {
         RuleFor(x => x.Quantity)
             .GreaterThan(0)

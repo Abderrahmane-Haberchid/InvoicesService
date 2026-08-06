@@ -1,10 +1,11 @@
+using Application.Abstractions;
 using Application.Exceptions;
 using Domain.Models;
 using Domain.Respository;
 using FluentValidation;
 using InvoicesService.Shared.Events;
-using MassTransit;
 using MediatR;
+using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Logging;
 
 namespace Application.Features.CreateInvoice;
@@ -12,18 +13,17 @@ namespace Application.Features.CreateInvoice;
 public class CreateInvoiceHandler(
     IInvoiceRepository invoiceRepository,
     IValidator<CreateInvoiceCommand> validator,
-    IPublishEndpoint publishEndpoint,
+    IEventPublisher eventPublisher,
     ILogger<CreateInvoiceHandler> logger) 
     : IRequestHandler<CreateInvoiceCommand, CreateInvoiceResponse>
 {
-
     public async Task<CreateInvoiceResponse> Handle(CreateInvoiceCommand request, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(request);
         
         await validator.ValidateAndThrowAsync(request, cancellationToken);
         
-        logger.LogInformation("Invoice for customer {id} start processing in invoice service", 
+        logger.LogInformation("Invoice for customer {id} started processing in invoice service", 
             request.CustomerId);
         
         
@@ -40,7 +40,9 @@ public class CreateInvoiceHandler(
         if (savedInvoice is null)
             throw new NullObjectReturnedFromCreateRepositoryException("No Invoice Saved !");
 
-        await publishEndpoint.Publish(new InvoiceCreatedEvent(
+        var response = savedInvoice.ToResponse();
+
+        await eventPublisher.PublishAsync(new InvoiceCreatedEvent(
             savedInvoice.Id,
             savedInvoice.CustomerId,
             savedInvoice.Total,
@@ -48,6 +50,6 @@ public class CreateInvoiceHandler(
         
         await invoiceRepository.SaveChangeAsync(cancellationToken);
 
-        return savedInvoice.ToResponse();
+        return response;
     }
 }

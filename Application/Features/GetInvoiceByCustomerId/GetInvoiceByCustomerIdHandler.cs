@@ -1,25 +1,25 @@
-
+using Application.Features.GetInvoiceByCutomerId;
 using Domain.Respository;
+using FluentValidation;
 using MediatR;
 
-namespace Application.Features.GetInvoiceByCutomerId;
+namespace Application.Features.GetInvoiceByCustomerId;
 
-public class GetInvoiceByCustomerIdHandler(IInvoiceRepository invoiceRepository) : IRequestHandler<GetInvoiceByCustomerIdQuery, List<GetInvoiceByCustomerIdResponse>>
+public class GetInvoiceByCustomerIdHandler(
+    IInvoiceRepository invoiceRepository,
+    IValidator<GetInvoiceByCustomerIdQuery> validator) 
+    : IRequestHandler<GetInvoiceByCustomerIdQuery, List<GetInvoiceByCustomerIdResponse>>
 {
     public async Task<List<GetInvoiceByCustomerIdResponse>> Handle(GetInvoiceByCustomerIdQuery request, CancellationToken cancellationToken)
     {
-        if (request.CustomerId <= 0)
-        {
-            throw new ArgumentNullException(nameof(request.CustomerId), "CustomerId Should not be Empty");
-        }
+        var result = await validator.ValidateAsync(request, cancellationToken);
+        if(!result.IsValid)
+            throw new  ValidationException(result.Errors);
 
         var invoices = await invoiceRepository.GetInvoiceByCustomerIdAsync(request.CustomerId, cancellationToken);
 
-        if (invoices.Count == 0)
-        {
-            throw new KeyNotFoundException("Invoices Not Found");
-        }
-
-        return invoices.ToResponses();
+        return invoices.Count == 0 
+            ? throw new KeyNotFoundException("Invoices Not Found") 
+            : invoices.ToResponses();
     }
 }

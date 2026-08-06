@@ -76,17 +76,19 @@ public static class DependencyInjection
         
         services.AddStackExchangeRedisCache(options =>
         {
-            options.Configuration =  configuration["Redis:Configuration"];
+            options.Configuration =  configuration["Redis:ConnectionStrings"];
         });
 
         services.AddHybridCache(options =>
         {
             options.DefaultEntryOptions = new HybridCacheEntryOptions
             {
-                Expiration = TimeSpan.FromMinutes(5),
-                LocalCacheExpiration = TimeSpan.FromMinutes(1)
+                Expiration = TimeSpan.FromSeconds(20),
+                LocalCacheExpiration = TimeSpan.FromSeconds(10)
             };
         });
+
+        services.AddScoped<IEventPublisher, EventPublisher>();
 
         return services;
     }
