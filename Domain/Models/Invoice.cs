@@ -26,13 +26,13 @@ public class Invoice
         DateTime createdAt, 
         InvoiceStatus status)
     {
-        this.Id = id;
-        this.CompanyId = companyId;
-        this.CustomerId = customerId;
-        this.Currency = currency;
-        this.Total = total;
-        this.CreatedAt = createdAt;
-        this.Status = status;
+        Id = id;
+        CompanyId = companyId;
+        CustomerId = customerId;
+        Currency = currency;
+        Total = total;
+        CreatedAt = createdAt;
+        Status = status;
     }
 
     public static Invoice Create(

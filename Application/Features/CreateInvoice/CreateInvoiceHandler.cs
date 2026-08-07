@@ -21,7 +21,11 @@ public class CreateInvoiceHandler(
     {
         ArgumentNullException.ThrowIfNull(request);
         
-        await validator.ValidateAndThrowAsync(request, cancellationToken);
+        var validate = await validator.ValidateAsync(request, cancellationToken);
+        if (!validate.IsValid)
+        {
+            throw new ValidationException(validate.Errors);
+        }
         
         logger.LogInformation("Invoice for customer {id} started processing in invoice service", 
             request.CustomerId);

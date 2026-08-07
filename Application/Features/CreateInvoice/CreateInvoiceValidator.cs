@@ -20,12 +20,9 @@ public class CreateInvoiceValidator : AbstractValidator<CreateInvoiceCommand>{
         RuleFor(x => x.Items)
             .NotEmpty()
             .WithMessage("Items must not be empty");
-        
+            
         RuleForEach(x => x.Items)
             .SetValidator(new CreateInvoiceItemValidator());
-        
-        
-        
     }
 }
 

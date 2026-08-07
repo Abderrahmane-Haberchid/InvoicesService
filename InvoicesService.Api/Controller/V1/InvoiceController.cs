@@ -17,8 +17,12 @@ public class InvoiceController(
     ILogger<InvoiceController> logger) 
     : ControllerBase
 {
-
+    
+    
     [HttpPost]
+    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> Create(
         [FromBody] CreateInvoiceCommand createInvoiceCommand, 
         CancellationToken cancellationToken)
@@ -29,6 +33,9 @@ public class InvoiceController(
     }
 
     [HttpGet("{customerId:int}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetByCustomerId(int customerId, CancellationToken cancellationToken)
     {
         var request = new GetInvoiceByCustomerIdQuery(customerId);
@@ -37,6 +44,9 @@ public class InvoiceController(
     }
     
     [HttpGet("{invoiceId:guid}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetByInvoiceId(Guid invoiceId, CancellationToken cancellationToken)
     {
         var request = new GetInvoiceByIdQuery(invoiceId);
@@ -45,6 +55,8 @@ public class InvoiceController(
     }
 
     [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetAll(int? page, int? pageSize, CancellationToken cancellationToken)
     {
         var request = new GetInvoicesQuery(page ?? 1, pageSize ?? 50);
