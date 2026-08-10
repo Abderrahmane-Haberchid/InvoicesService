@@ -65,18 +65,4 @@ public class InvoiceController(
         var invoices = await sender.Send(request, cancellationToken);
         return Ok(invoices);
     }
-
-    [HttpPost("pay-invoice/{invoiceId:guid}")]
-    public async Task<IActionResult> PayInvoice(Guid invoiceId, CancellationToken cancellationToken)
-    {
-        logger.LogInformation($"Invoice with Id {invoiceId} Event is under processing");
-        
-        var testEvent = new TestEvent(123);
-        
-        await eventPublisher.PublishAsync<TestEvent>(testEvent, cancellationToken);
-        
-        logger.LogInformation($"Event has been sent to payment service...{testEvent}");
-
-        return Ok();
-    }
 }
