@@ -1,4 +1,5 @@
 using Application.Exceptions;
+using Domain.Enums;
 using Domain.Models;
 using Domain.Respository;
 using Microsoft.EntityFrameworkCore;
@@ -62,6 +63,26 @@ public class InvoiceRepository(
             .Take(pageSize.Value)
             .ToListAsync(cancellationToken);
         
+    }
+
+    public async Task<Invoice> UpdateInvoiceStatusAsync(
+        Invoice invoice, 
+        InvoiceStatus status,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(invoice);
+        if(!Enum.IsDefined(status))
+            throw new ArgumentNullException(nameof(status), "Status must be defined");
+
+        var newStatus = invoice.SetStatus(status);
+        
+        if(!newStatus.Equals(status))
+            throw new StatusAssignationFailedException("Status Assignation failed");
+        
+        var savedInvoice = dbContext.Invoices.Update(invoice);
+        await dbContext.SaveChangesAsync(cancellationToken);
+        
+        return savedInvoice.Entity;
     }
 
     public async Task SaveChangeAsync(CancellationToken cancellationToken)

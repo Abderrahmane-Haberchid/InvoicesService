@@ -1,7 +1,7 @@
-namespace InvoicesService.Shared.Events;
+namespace InvoicesService.Shared.Contracts.Events;
 
 public record InvoiceCreatedEvent(
-    Guid Id,
+    Guid InvoiceId,
     int  CustomerId,
     decimal Total,
     DateTime CreatedAt

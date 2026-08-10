@@ -17,6 +17,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Domain\Domain.csproj" />
+        <ProjectReference Include="..\InvoicesService.Shared.Contracts\InvoicesService.Shared.Contracts.csproj" />
     </ItemGroup>
 
 </Project>

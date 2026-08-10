@@ -6,7 +6,7 @@ using Domain.Respository;
 using FluentAssertions;
 using FluentValidation;
 using FluentValidation.Results;
-using InvoicesService.Shared.Events;
+using InvoicesService.Shared.Contracts.Events;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;

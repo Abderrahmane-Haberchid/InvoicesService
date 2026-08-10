@@ -1,5 +1,5 @@
 
-using InvoicesService.Domain.DomainExceptions;
+using Domain.DomainExceptions;
 
 namespace Domain.Models;
 

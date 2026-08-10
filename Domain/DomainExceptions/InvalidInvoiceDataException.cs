@@ -1,6 +1,3 @@
-namespace InvoicesService.Domain.DomainExceptions;
+namespace Domain.DomainExceptions;
 
-public class InvalidInvoiceDataException : DomainException
-{
-    public InvalidInvoiceDataException(string message){}
-}
+public class InvalidInvoiceDataException(string message) : DomainException(message);

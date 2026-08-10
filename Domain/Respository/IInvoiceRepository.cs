@@ -1,3 +1,4 @@
+using Domain.Enums;
 using Domain.Models;
 
 namespace Domain.Respository;
@@ -13,6 +14,8 @@ public interface IInvoiceRepository
     public Task<Invoice?> GetInvoiceByIdAsync(Guid invoiceId, CancellationToken cancellationToken);
     
     public Task<List<Invoice>> GetAllInvoicesAsync(int? page, int? pageSize, CancellationToken cancellationToken);
+    
+    public Task<Invoice> UpdateInvoiceStatusAsync(Invoice invoice, InvoiceStatus status, CancellationToken cancellationToken);
     
     public Task SaveChangeAsync(CancellationToken cancellationToken);
 }

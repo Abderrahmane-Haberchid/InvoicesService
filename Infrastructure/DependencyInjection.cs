@@ -1,6 +1,6 @@
 using Application.Abstractions;
-using Application.Features.GenerateInvoice;
-using Infrastructure.Caching;
+using Infrastructure.Messaging;
+using Infrastructure.Pdf;
 using Infrastructure.Persistance;
 using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -19,8 +19,8 @@ public static class DependencyInjection
         this IServiceCollection services, 
         IConfiguration configuration)
     {
-
-        //services.AddScoped<ICacheService, HybridCacheService>();
+        services.AddScoped<IEventPublisher, EventPublisher>();
+        services.AddScoped<IPdfGenerator, PdfGenerator>();
 
         services.AddDbContext<AppDbContext>(options =>
         {
@@ -29,6 +29,7 @@ public static class DependencyInjection
         
         services.AddMassTransit(busConfiguration =>
         {
+            
             busConfiguration.AddEntityFrameworkOutbox<AppDbContext>(options =>
             {
                 options.UsePostgres();
@@ -42,12 +43,13 @@ public static class DependencyInjection
             {
                 cfg.UseEntityFrameworkOutbox<AppDbContext>(context);
             });
-        
-            busConfiguration.AddConsumer<GenerateInvoiceHandler>();
     
             busConfiguration.UsingRabbitMq((context, cfg) =>
             {
-                cfg.Host(configuration["RabbitMQ:Host"], "/", host =>
+                cfg.Host(configuration["RabbitMQ:Host"], 
+                    ushort.Parse(configuration["RabbitMQ:Port"]!),
+                    "/",
+                    host =>
                 {
                     host.Username(configuration["RabbitMQ:Username"]!);
                     host.Password(configuration["RabbitMQ:Password"]!);
@@ -87,8 +89,6 @@ public static class DependencyInjection
                 LocalCacheExpiration = TimeSpan.FromSeconds(10)
             };
         });
-
-        services.AddScoped<IEventPublisher, EventPublisher>();
 
         return services;
     }

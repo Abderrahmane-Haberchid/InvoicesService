@@ -12,27 +12,28 @@ namespace InvoicesServiceTest.InvoicesService.IntegrationTests;
 
 public class InvoiceWebApplicationFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
-
-    PostgreSqlContainer postgreSqlContainer;
-    RabbitMqContainer rabbitMqContainer;
-    RedisContainer redisContainer;
-    
-    public InvoiceWebApplicationFactory()
-    {
-        
-        postgreSqlContainer = new PostgreSqlBuilder()
-            .WithDatabase("Invoices")
-            .WithPassword("abdo")
-            .WithUsername("abdo")
-            .Build();
+    private readonly PostgreSqlContainer postgreSqlContainer = new PostgreSqlBuilder()
+        .WithDatabase("Invoices")
+        .WithPassword("abdo")
+        .WithUsername("abdo")
+        .Build();
             
         
-        rabbitMqContainer = new RabbitMqBuilder()
-            .WithPassword("abdo")
-            .WithUsername("abdo")
-            .Build();
+    private readonly RabbitMqContainer rabbitMqContainer = new RabbitMqBuilder()
+        .WithUsername("guest")
+        .WithPassword("guest")
+        .Build();
 
-        redisContainer = new RedisBuilder().Build();
+    private readonly RedisContainer redisContainer = new RedisBuilder().Build();
+
+    
+    public async Task InitializeAsync()
+    {
+        await Task.WhenAll(
+            postgreSqlContainer.StartAsync(),
+            rabbitMqContainer.StartAsync(),
+            redisContainer.StartAsync()
+        );
     }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
@@ -44,21 +45,16 @@ public class InvoiceWebApplicationFactory : WebApplicationFactory<Program>, IAsy
                 new Dictionary<string, string?>
                 {
                     { "ConnectionStrings:DefaultConnection", postgreSqlContainer.GetConnectionString() },
-                    { "ConnectionStrings:Host", rabbitMqContainer.Hostname },
-                    { "ConnectionStrings:Port", rabbitMqContainer.GetMappedPublicPort(5672).ToString() },
-                    { "ConnectionStrings:Username", "abdo" },
-                    { "ConnectionStrings:Password", "abdo" },
+                    { "RabbitMQ:Host", rabbitMqContainer.Hostname },
+                    { "RabbitMQ:Port", rabbitMqContainer.GetMappedPublicPort(5672).ToString() },
+                    { "RabbitMQ:Username", "guest" },
+                    { "RabbitMQ:Password", "guest" },
                     { "Redis:ConnectionStrings", redisContainer.GetConnectionString() }
                 });
         });
     }
 
-    public async Task InitializeAsync()
-    {
-        await postgreSqlContainer.StartAsync();
-        await rabbitMqContainer.StartAsync();
-        await redisContainer.StartAsync();
-    }
+
 
     public async Task DisposeAsync()
     {

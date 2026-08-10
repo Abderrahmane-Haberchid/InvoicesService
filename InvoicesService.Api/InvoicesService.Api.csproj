@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
     <PropertyGroup>
         <TargetFramework>net10.0</TargetFramework>
@@ -6,7 +6,8 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
         <RootNamespace>InvoicesService</RootNamespace>
-    </PropertyGroup>
+      <UserSecretsId>3d3d0217-9a53-49e4-9a6d-0fe0c4471e4c</UserSecretsId>
+  </PropertyGroup>
 
     <ItemGroup>
         <!-- EF Core -->

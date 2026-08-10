@@ -1,8 +1,8 @@
 using System.Data;
 using System.Net;
 using Application.Exceptions;
+using Domain.DomainExceptions;
 using FluentValidation;
-using InvoicesService.Domain.DomainExceptions;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 

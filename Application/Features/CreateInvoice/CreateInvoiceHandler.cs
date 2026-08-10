@@ -3,7 +3,7 @@ using Application.Exceptions;
 using Domain.Models;
 using Domain.Respository;
 using FluentValidation;
-using InvoicesService.Shared.Events;
+using InvoicesService.Shared.Contracts.Events;
 using MediatR;
 using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Logging;

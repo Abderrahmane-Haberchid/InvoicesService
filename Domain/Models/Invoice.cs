@@ -1,5 +1,5 @@
+using Domain.DomainExceptions;
 using Domain.Enums;
-using InvoicesService.Domain.DomainExceptions;
 
 namespace Domain.Models;
 
@@ -79,6 +79,16 @@ public class Invoice
     public IReadOnlyCollection<InvoiceItem> GetItems()
     {
         return _items;
+    }
+
+    public InvoiceStatus SetStatus(InvoiceStatus status)
+    {
+        if (Status == status)
+        {
+            throw new InvoiceStatusAlreadyAssignedException($"Invoice already has an assigned status {status}");
+        }
+        Status = status;
+        return Status;
     }
 
 }

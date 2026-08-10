@@ -1,12 +1,20 @@
 using Application.Abstractions;
 using MassTransit;
+using Microsoft.Extensions.Logging;
 
-namespace Infrastructure;
+namespace Infrastructure.Messaging;
 
-public class EventPublisher(IPublishEndpoint publishEndpoint) : IEventPublisher
+public class EventPublisher(
+    IPublishEndpoint publishEndpoint, 
+    ILogger<EventPublisher> logger) : IEventPublisher
 {
-    public async Task PublishAsync<InvoiceCreatedEvent>(InvoiceCreatedEvent message,  CancellationToken cancellationToken = default)
+    public async Task PublishAsync<T>(T message,  CancellationToken cancellationToken = default)
     {
+        if (message == null)
+            throw new ArgumentNullException(nameof(message), "Cannot publish null event to rabbitMQ Queue");
+        
+        logger.LogInformation($"Publishing {typeof(T).Name} Event To RabbitMQ Queue");
+        
         await publishEndpoint.Publish(message, cancellationToken);
     }
 }

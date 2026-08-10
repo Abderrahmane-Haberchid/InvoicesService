@@ -1,6 +1,6 @@
-namespace InvoicesService.Domain.DomainExceptions;
+namespace Domain.DomainExceptions;
 
 public class DomainException : Exception
 {
-    
+    protected DomainException(string message) :  base(message){}
 }

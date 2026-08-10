@@ -1,9 +1,10 @@
+using Application.Abstractions;
 using Application.Features.CreateInvoice;
 using Application.Features.GetInvoiceByCustomerId;
-using Application.Features.GetInvoiceByCutomerId;
 using Application.Features.GetInvoiceById;
 using Application.Features.GetInvoices;
 using Asp.Versioning;
+using InvoicesService.Shared.Contracts.Events;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -14,6 +15,7 @@ namespace InvoicesService.Controller.V1;
 [Route("api/v{apiVersion:apiVersion}/invoices")]
 public class InvoiceController(
     ISender sender,
+    IEventPublisher eventPublisher,
     ILogger<InvoiceController> logger) 
     : ControllerBase
 {
@@ -62,5 +64,19 @@ public class InvoiceController(
         var request = new GetInvoicesQuery(page ?? 1, pageSize ?? 50);
         var invoices = await sender.Send(request, cancellationToken);
         return Ok(invoices);
+    }
+
+    [HttpPost("pay-invoice/{invoiceId:guid}")]
+    public async Task<IActionResult> PayInvoice(Guid invoiceId, CancellationToken cancellationToken)
+    {
+        logger.LogInformation($"Invoice with Id {invoiceId} Event is under processing");
+        
+        var testEvent = new TestEvent(123);
+        
+        await eventPublisher.PublishAsync<TestEvent>(testEvent, cancellationToken);
+        
+        logger.LogInformation($"Event has been sent to payment service...{testEvent}");
+
+        return Ok();
     }
 }
