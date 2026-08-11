@@ -1,5 +1,6 @@
 using Application.Abstractions;
 using Infrastructure.Messaging;
+using Infrastructure.Messaging.Consumers;
 using Infrastructure.Pdf;
 using Infrastructure.Persistance;
 using MassTransit;
@@ -29,6 +30,8 @@ public static class DependencyInjection
         
         services.AddMassTransit(busConfiguration =>
         {
+
+            busConfiguration.AddConsumer<PaymentDoneConsumer>();
             
             busConfiguration.AddEntityFrameworkOutbox<AppDbContext>(options =>
             {
