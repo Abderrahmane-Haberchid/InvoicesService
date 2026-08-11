@@ -18,6 +18,9 @@ public class InvoiceConfiguration :  IEntityTypeConfiguration<Invoice>
             .HasForeignKey(i => i.InvoiceId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        builder.Property(i => i.Status)
+            .HasConversion<string>();
+
         builder.HasIndex(i => i.CompanyId);
     }
 }

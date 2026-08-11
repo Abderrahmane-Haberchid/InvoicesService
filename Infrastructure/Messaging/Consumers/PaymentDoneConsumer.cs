@@ -1,20 +1,30 @@
+using Domain.Enums;
+using Domain.Respository;
 using InvoicesService.Shared.Contracts.Events;
 using MassTransit;
 using Microsoft.Extensions.Logging;
 
 namespace Infrastructure.Messaging.Consumers;
 
-public class PaymentDoneConsumer(ILogger<PaymentDoneConsumer> logger) : IConsumer<PaymentDoneEvent>
+public class PaymentDoneConsumer(
+    ILogger<PaymentDoneConsumer> logger,
+    IInvoiceRepository invoiceRepository) : IConsumer<PaymentDoneEvent>
 {
-    public Task Consume(ConsumeContext<PaymentDoneEvent> context)
+    public async Task Consume(ConsumeContext<PaymentDoneEvent> context)
     {
         logger.LogInformation("=====================================================================");
-        logger.LogInformation($"Payment done at {context.Message.PaymentId}");
-        logger.LogInformation($"Invoice id {context.Message.InvoiceId}");
-        logger.LogInformation($"Payment done at {context.Message.Total}");
-        logger.LogInformation($"Payment done at {context.Message.PaidAt}");
+        logger.LogInformation($"Payment done at {context.Message.PaymentId}, Setting Invoice to PAID...");
         logger.LogInformation("=====================================================================");
         
-        return Task.CompletedTask;
+        var invoice = await invoiceRepository.GetInvoiceByIdAsync(context.Message.InvoiceId, default);
+
+        if (invoice == null)
+        {
+            throw new KeyNotFoundException("Invoice not found");
+        }
+        
+        invoice.SetStatus(InvoiceStatus.PAID);
+
+        await invoiceRepository.SaveChangeAsync(default);
     }
 }

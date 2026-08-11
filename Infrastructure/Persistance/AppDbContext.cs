@@ -1,4 +1,4 @@
-using System.ComponentModel.DataAnnotations.Schema;
+
 using Domain.Models;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;

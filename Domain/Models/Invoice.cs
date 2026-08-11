@@ -81,14 +81,13 @@ public class Invoice
         return _items;
     }
 
-    public InvoiceStatus SetStatus(InvoiceStatus status)
+    public void SetStatus(InvoiceStatus status)
     {
         if (Status == status)
         {
             throw new InvoiceStatusAlreadyAssignedException($"Invoice already has an assigned status {status}");
         }
         Status = status;
-        return Status;
     }
 
 }

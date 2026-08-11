@@ -5,6 +5,7 @@ using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Logging;
+using ValidationException = FluentValidation.ValidationException;
 
 namespace Application.Features.GetInvoices;
 

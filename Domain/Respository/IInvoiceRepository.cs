@@ -15,7 +15,5 @@ public interface IInvoiceRepository
     
     public Task<List<Invoice>> GetAllInvoicesAsync(int? page, int? pageSize, CancellationToken cancellationToken);
     
-    public Task<Invoice> UpdateInvoiceStatusAsync(Invoice invoice, InvoiceStatus status, CancellationToken cancellationToken);
-    
     public Task SaveChangeAsync(CancellationToken cancellationToken);
 }
