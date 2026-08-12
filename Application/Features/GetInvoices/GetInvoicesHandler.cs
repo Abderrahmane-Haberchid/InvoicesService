@@ -26,18 +26,12 @@ public class GetInvoicesHandler(
             $"cached-invoices-{request?.Page}-{request?.PageSize}",
             async ct =>
             {
-                logger.LogInformation("==============================================================================================");
-                logger.LogInformation("=============================🔥 Database hit =================================================");
-                logger.LogInformation("==============================================================================================");
-                
-                var entities =  await invoiceRepository
-                    .GetAllInvoicesAsync(request?.Page, request?.PageSize, ct);
+                var entities =  await invoiceRepository.GetAllInvoicesAsync(request?.Page, request?.PageSize, ct);
 
                 return entities.ToResponses();
             },
             cancellationToken:  cancellationToken
             );
-        
         
         
         return invoices.Count == 0 

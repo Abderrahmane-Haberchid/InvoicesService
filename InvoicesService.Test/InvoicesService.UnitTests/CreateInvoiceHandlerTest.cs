@@ -1,4 +1,5 @@
 using Application.Abstractions;
+using Application.Exceptions;
 using Application.Features.CreateInvoice;
 using Domain.Enums;
 using Domain.Models;
@@ -79,6 +80,50 @@ public class CreateInvoiceHandlerTest
         result.Currency.Should().Be(command.Currency);
         result.CreatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
 
+    }
+    
+    [Fact]
+    public async Task Handle_ShouldThrowNullObjectReturnedFromCreateRepositoryException_WhenNoInvoiceIsSavedByRepository()
+    {
+        var command = new CreateInvoiceCommand(
+            1,
+            Guid.NewGuid(),
+            CurrencyType.USD,
+            [
+                new InvoiceItemCommand(1, 10, 400),
+                new InvoiceItemCommand(2, 10, 400),
+                new InvoiceItemCommand(3, 10, 400)
+            ]);
+        
+        _invoiceRepositoryMock
+            .Setup(x => x.CreateInvoiceAsync(It.IsAny<Invoice>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Invoice invoice, CancellationToken _) => null!);
+        
+        await Assert.ThrowsAsync<NullObjectReturnedFromCreateRepositoryException>(() => _sut.Handle(command, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task Handle_ShouldReturnCreateInvoiceResponse_WhenInvoiceCreated()
+    {
+        var command = new CreateInvoiceCommand(
+            1,
+            Guid.NewGuid(),
+            CurrencyType.USD,
+            [
+                new InvoiceItemCommand(1, 10, 400),
+                new InvoiceItemCommand(2, 10, 400),
+                new InvoiceItemCommand(3, 10, 400)
+            ]);
+
+        var result = await _sut.Handle(command, CancellationToken.None);
+        
+        result.GetType().Name.Should().Be("CreateInvoiceResponse");
+    }
+
+    [Fact]
+    public async Task Handle_ShouldThrowNullArgumentException_WhenRequestIsNull()
+    {
+        await Assert.ThrowsAsync<ArgumentNullException>(async () => await _sut.Handle(null!, CancellationToken.None));
     }
     
     [Fact]

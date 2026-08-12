@@ -12,7 +12,10 @@ public class GetInvoiceByCustomerIdHandler(
 {
     public async Task<List<GetInvoiceByCustomerIdResponse>> Handle(GetInvoiceByCustomerIdQuery request, CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(request);
+        
         var result = await validator.ValidateAsync(request, cancellationToken);
+        
         if(!result.IsValid)
             throw new  ValidationException(result.Errors);
 

@@ -8,7 +8,7 @@ public class EventPublisher(
     IPublishEndpoint publishEndpoint, 
     ILogger<EventPublisher> logger) : IEventPublisher
 {
-    public async Task PublishAsync<T>(T message,  CancellationToken cancellationToken = default)
+    public async Task PublishAsync<T>(T message,  CancellationToken cancellationToken = default) where T : class
     {
         if (message == null)
             throw new ArgumentNullException(nameof(message), "Cannot publish null event to rabbitMQ Queue");

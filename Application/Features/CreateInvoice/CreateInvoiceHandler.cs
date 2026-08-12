@@ -52,7 +52,7 @@ public class CreateInvoiceHandler(
             savedInvoice.Total,
             DateTime.UtcNow), cancellationToken);
         
-        await invoiceRepository.SaveChangeAsync(cancellationToken);
+        await invoiceRepository.SaveChangeAsync(cancellationToken); 
 
         return response;
     }

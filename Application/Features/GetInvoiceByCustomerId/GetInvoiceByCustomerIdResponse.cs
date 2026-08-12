@@ -1,6 +1,6 @@
 using Domain.Enums;
 
-namespace Application.Features.GetInvoiceByCutomerId;
+namespace Application.Features.GetInvoiceByCustomerId;
 
 public record GetInvoiceByCustomerIdResponse(
     Guid InvoiceId, 

@@ -6,6 +6,8 @@ public class GetInvoiceByCustomerIdQueryValidator : AbstractValidator<GetInvoice
 {
     public GetInvoiceByCustomerIdQueryValidator()
     {
-        RuleFor(x => x.CustomerId).NotEmpty().GreaterThan(0);
+        RuleFor(x => x.CustomerId)
+            .NotEmpty()
+            .GreaterThan(0);
     }
 }
