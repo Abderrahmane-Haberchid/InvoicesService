@@ -15,7 +15,6 @@ namespace InvoicesService.Controller.V1;
 [Route("api/v{apiVersion:apiVersion}/invoices")]
 public class InvoiceController(
     ISender sender,
-    IEventPublisher eventPublisher,
     ILogger<InvoiceController> logger) 
     : ControllerBase
 {

@@ -1,4 +1,5 @@
 using Application.Abstractions;
+using Infrastructure.Caching;
 using Infrastructure.Messaging;
 using Infrastructure.Messaging.Consumers;
 using Infrastructure.Pdf;
@@ -22,6 +23,17 @@ public static class DependencyInjection
     {
         services.AddScoped<IEventPublisher, EventPublisher>();
         services.AddScoped<IPdfGenerator, PdfGenerator>();
+
+        services.AddSingleton<ICacheService, HybridCacheService>();
+        
+        services.AddHybridCache(options =>
+        {
+            options.DefaultEntryOptions = new HybridCacheEntryOptions
+            {
+                Expiration = TimeSpan.FromSeconds(20),
+                LocalCacheExpiration = TimeSpan.FromSeconds(10)
+            };
+        });
 
         services.AddDbContext<AppDbContext>(options =>
         {
@@ -84,14 +96,7 @@ public static class DependencyInjection
             options.Configuration =  configuration["Redis:ConnectionStrings"];
         });
 
-        services.AddHybridCache(options =>
-        {
-            options.DefaultEntryOptions = new HybridCacheEntryOptions
-            {
-                Expiration = TimeSpan.FromSeconds(20),
-                LocalCacheExpiration = TimeSpan.FromSeconds(10)
-            };
-        });
+        
 
         return services;
     }
