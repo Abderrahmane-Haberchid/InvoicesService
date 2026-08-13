@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Npgsql;
 using Respawn;
 using Testcontainers.PostgreSql;
 using Testcontainers.RabbitMq;
@@ -62,7 +63,7 @@ public class InvoiceWebApplicationFactory
     private async Task InitializeRespawnerAsync()
     {
         _respawner = await Respawner.CreateAsync(
-            _postgreSqlContainer.GetConnectionString(),
+            new NpgsqlConnection(_postgreSqlContainer.GetConnectionString()),
             new RespawnerOptions
             {
                 DbAdapter = DbAdapter.Postgres
@@ -74,7 +75,7 @@ public class InvoiceWebApplicationFactory
         if (_respawner is null)
             throw new InvalidOperationException("Respawner has not been initialized.");
 
-        await _respawner.ResetAsync(_postgreSqlContainer.GetConnectionString());
+        await _respawner.ResetAsync(new NpgsqlConnection(_postgreSqlContainer.GetConnectionString()));
     }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)

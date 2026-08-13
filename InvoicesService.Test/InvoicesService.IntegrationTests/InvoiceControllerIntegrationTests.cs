@@ -12,15 +12,19 @@ public class InvoiceControllerIntegrationTests : IClassFixture<InvoiceWebApplica
 {
 
     private readonly InvoiceWebApplicationFactory _factory;
+    private readonly IInvoiceRepository _invoiceRepository;
     
     public InvoiceControllerIntegrationTests(InvoiceWebApplicationFactory factory)
     {
         _factory = factory;
+        _invoiceRepository = factory.Services.GetRequiredService<IInvoiceRepository>();
+        
     }
 
     [Fact]
     public async Task CreateInvoice_ShouldReturn201_WhenInvoiceIsSaved()
     {
+        await _factory.ResetDatabaseAsync();
         var client = _factory.CreateClient();
         var command = new CreateInvoiceCommand(
             1,
@@ -41,6 +45,8 @@ public class InvoiceControllerIntegrationTests : IClassFixture<InvoiceWebApplica
     [Fact]
     public async Task CreateInvoice_ShouldReturnCreatedStatusCode_WhenInvoiceRepositoryContainOneRecordAndHeaderLocationEndWithInvoiceId()
     {
+        await _factory.ResetDatabaseAsync();
+        
         var client = _factory.CreateClient();
         var command = new CreateInvoiceCommand(
             1,
@@ -51,12 +57,10 @@ public class InvoiceControllerIntegrationTests : IClassFixture<InvoiceWebApplica
                 new InvoiceItemCommand(2, 10, 400),
                 new InvoiceItemCommand(3, 10, 400)
             ]);
-
-        using var scope = _factory.Services.CreateScope();
-        var _invoiceRepository = scope.ServiceProvider.GetRequiredService<IInvoiceRepository>();
         
         var response = await client.PostAsJsonAsync("api/v1/invoices", command);
         var savedInvoice = await _invoiceRepository.GetAllInvoicesAsync(1 , 50, CancellationToken.None);
+        
         Assert.NotNull(savedInvoice[0]);
         savedInvoice.Count().Should().Be(2);
         response.Headers?.Location?.ToString().EndsWith(savedInvoice[0].Id.ToString()).Should().BeTrue();
