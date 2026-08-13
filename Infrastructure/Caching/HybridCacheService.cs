@@ -5,17 +5,21 @@ namespace Infrastructure.Caching;
 
 public class HybridCacheService(HybridCache hybridCache) : ICacheService
 {
-    public Task<T> GetOrCreateAsync<T>(
-        string key, 
-        Func<CancellationToken, Task<T>> factory, 
+    public async Task<T> GetOrCreateAsync<T>(
+        string key,
+        Func<CancellationToken, Task<T>> factory,
         CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        return await hybridCache.GetOrCreateAsync(
+            key,
+            async ct => await factory(ct),
+            cancellationToken: cancellationToken);
     }
 
-    public Task RemoveAsync(string key, CancellationToken cancellationToken = default)
+    public async Task RemoveAsync(
+        string key,
+        CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        await hybridCache.RemoveAsync(key, cancellationToken);
     }
-    
 }
