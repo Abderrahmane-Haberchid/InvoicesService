@@ -1,5 +1,6 @@
 
 using Infrastructure.Persistance;
+using MassTransit;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
@@ -17,6 +18,8 @@ public class InvoiceWebApplicationFactory
     : WebApplicationFactory<Program>, IAsyncLifetime
 {
     private Respawner? _respawner;
+    private NpgsqlConnection _dbConnection;
+    private SemaphoreSlim _semaphoreSlim = new  (1, 1);
 
     private readonly PostgreSqlContainer _postgreSqlContainer =
         new PostgreSqlBuilder()
@@ -42,12 +45,14 @@ public class InvoiceWebApplicationFactory
             _rabbitMqContainer.StartAsync(),
             _redisContainer.StartAsync()
         );
-
-        // Force the ASP.NET test host to be created.
-        _ = Services;
-
+        
+        _dbConnection = new NpgsqlConnection(_postgreSqlContainer.GetConnectionString());
+        _dbConnection.Open();
+        
         await ApplyMigrationsAsync();
         await InitializeRespawnerAsync();
+        // Force the ASP.NET test host to be created.
+        _ = Services;
     }
 
     private async Task ApplyMigrationsAsync()
@@ -63,7 +68,7 @@ public class InvoiceWebApplicationFactory
     private async Task InitializeRespawnerAsync()
     {
         _respawner = await Respawner.CreateAsync(
-            new NpgsqlConnection(_postgreSqlContainer.GetConnectionString()),
+            _dbConnection,
             new RespawnerOptions
             {
                 DbAdapter = DbAdapter.Postgres
@@ -73,9 +78,28 @@ public class InvoiceWebApplicationFactory
     public async Task ResetDatabaseAsync()
     {
         if (_respawner is null)
-            throw new InvalidOperationException("Respawner has not been initialized.");
+            throw new InvalidOperationException();
 
-        await _respawner.ResetAsync(new NpgsqlConnection(_postgreSqlContainer.GetConnectionString()));
+        for (var i = 0; i < 50; i++)
+        {
+            using var scope = Services.CreateScope();
+
+            var db = scope.ServiceProvider
+                .GetRequiredService<AppDbContext>();
+
+            var hasMessages = await db.OutboxMessages.AnyAsync();
+
+            if (!hasMessages)
+            {
+                await _respawner.ResetAsync(_dbConnection);
+                return;
+            }
+
+            await Task.Delay(100);
+        }
+
+        throw new TimeoutException(
+            "MassTransit outbox did not become empty.");
     }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
@@ -87,11 +111,9 @@ public class InvoiceWebApplicationFactory
             config.AddInMemoryCollection(
                 new Dictionary<string, string?>
                 {
-                    ["ConnectionStrings:DefaultConnection"] =
-                        _postgreSqlContainer.GetConnectionString(),
+                    ["ConnectionStrings:DefaultConnection"] = _postgreSqlContainer.GetConnectionString(),
 
-                    ["RabbitMQ:Host"] =
-                        _rabbitMqContainer.Hostname,
+                    ["RabbitMQ:Host"] = _rabbitMqContainer.Hostname,
 
                     ["RabbitMQ:Port"] =
                         _rabbitMqContainer
@@ -102,8 +124,7 @@ public class InvoiceWebApplicationFactory
 
                     ["RabbitMQ:Password"] = "guest",
 
-                    ["Redis:ConnectionStrings"] =
-                        _redisContainer.GetConnectionString()
+                    ["Redis:ConnectionStrings"] = _redisContainer.GetConnectionString()
                 });
         });
     }
@@ -116,6 +137,7 @@ public class InvoiceWebApplicationFactory
             _redisContainer.DisposeAsync().AsTask()
         );
 
+        _semaphoreSlim.Dispose();
         await DisposeAsyncCore();
     }
 

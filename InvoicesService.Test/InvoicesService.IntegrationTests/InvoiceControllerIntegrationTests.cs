@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace InvoicesServiceTest.InvoicesService.IntegrationTests;
 
+//[CollectionDefinition("Invoice Integration Tests",  DisableParallelization = true)]
 public class InvoiceControllerIntegrationTests : IClassFixture<InvoiceWebApplicationFactory>
 {
 
@@ -25,6 +26,7 @@ public class InvoiceControllerIntegrationTests : IClassFixture<InvoiceWebApplica
     public async Task CreateInvoice_ShouldReturn201_WhenInvoiceIsSaved()
     {
         await _factory.ResetDatabaseAsync();
+        
         var client = _factory.CreateClient();
         var command = new CreateInvoiceCommand(
             1,
@@ -59,10 +61,11 @@ public class InvoiceControllerIntegrationTests : IClassFixture<InvoiceWebApplica
             ]);
         
         var response = await client.PostAsJsonAsync("api/v1/invoices", command);
+        
         var savedInvoice = await _invoiceRepository.GetAllInvoicesAsync(1 , 50, CancellationToken.None);
         
         Assert.NotNull(savedInvoice[0]);
-        savedInvoice.Count().Should().Be(2);
+        savedInvoice.Should().HaveCount(1);
         response.Headers?.Location?.ToString().EndsWith(savedInvoice[0].Id.ToString()).Should().BeTrue();
     }
 }
