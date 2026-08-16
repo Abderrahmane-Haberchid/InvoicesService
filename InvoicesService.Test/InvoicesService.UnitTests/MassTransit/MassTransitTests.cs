@@ -80,4 +80,29 @@ public class MassTransitTests
         
         Assert.False(await harness.Consumed.Any<FailingCreatedInvoiceConsumerTest>());
     }
+
+    [Fact]
+    public async Task ConsumerShouldConsumeOnlyOneEvent_WhenEventAreDuplicated()
+    {
+        await using var provider = new ServiceCollection()
+            .AddMassTransitTestHarness(x => 
+                x.AddConsumer<CreatedInvoiceConsumerTest>())
+            .BuildServiceProvider();
+        
+        var harness = provider.GetRequiredService<ITestHarness>();
+        await harness.Start();
+        
+        var createdEvent = new InvoiceCreatedEvent(Guid.NewGuid(), 123, 400, DateTime.UtcNow);
+        
+        await provider.GetRequiredService<IPublishEndpoint>()
+            .Publish(createdEvent);
+        await provider.GetRequiredService<IPublishEndpoint>()
+            .Publish(createdEvent);
+        await provider.GetRequiredService<IPublishEndpoint>()
+            .Publish(createdEvent);
+        
+        var consumed = await harness.Consumed.SelectAsync<InvoiceCreatedEvent>().CountAsync();
+        consumed.Should().Be(3);
+        CreatedInvoiceConsumerTest.CustomerIds.Count.Should().Be(1);
+    }
 }
