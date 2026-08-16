@@ -1,5 +1,6 @@
 
 using Infrastructure.Persistance;
+using InvoicesServiceTest.Consumers;
 using MassTransit;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -7,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
+using Org.BouncyCastle.Crypto.Utilities;
 using Respawn;
 using Testcontainers.PostgreSql;
 using Testcontainers.RabbitMq;
@@ -104,8 +106,24 @@ public class InvoiceWebApplicationFactory
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        builder.UseEnvironment("Testing");
-
+        builder.ConfigureServices(services =>
+        {
+            services.AddMassTransitTestHarness(x =>
+            {
+                x.AddConsumer<CreatedInvoiceConsumerTest>();
+                x.UsingRabbitMq((context, cfg) =>
+                {
+                    cfg.Host(_rabbitMqContainer.Hostname, x =>
+                    {
+                        x.Username("guest");
+                        x.Password("guest");
+                    });
+                    
+                    cfg.ConfigureEndpoints(context);
+                });
+            });
+        });
+        
         builder.ConfigureAppConfiguration((context, config) =>
         {
             config.AddInMemoryCollection(
