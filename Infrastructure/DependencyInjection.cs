@@ -42,7 +42,6 @@ public static class DependencyInjection
         
         services.AddMassTransit(busConfiguration =>
         {
-
             busConfiguration.AddConsumer<PaymentDoneConsumer>();
             
             busConfiguration.AddEntityFrameworkOutbox<AppDbContext>(options =>
