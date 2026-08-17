@@ -1,5 +1,7 @@
 
 using Infrastructure.Persistance;
+using InvoicesServiceTest.Consumers;
+using MassTransit;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
@@ -103,6 +105,16 @@ public class InvoiceWebApplicationFactory
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        builder.UseEnvironment("Testing");
+
+        builder.ConfigureServices(services =>
+        {
+            services.AddMassTransitTestHarness(x =>
+            {
+                x.AddConsumer<CreatedInvoiceConsumerTest>();
+                x.AddConsumer<FailingCreatedInvoiceConsumerTest>();
+            });
+        });
         
         builder.ConfigureAppConfiguration((context, config) =>
         {
