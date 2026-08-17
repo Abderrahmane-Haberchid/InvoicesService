@@ -6,12 +6,15 @@ using Application.Features.GetInvoices;
 using Asp.Versioning;
 using InvoicesService.Shared.Contracts.Events;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Serilog;
 
 namespace InvoicesService.Controller.V1;
 
 [ApiVersion("1.0")]
 [ApiController]
+[Authorize]
 [Route("api/v{apiVersion:apiVersion}/invoices")]
 public class InvoiceController(
     ISender sender,
@@ -39,6 +42,7 @@ public class InvoiceController(
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetByCustomerId(int customerId, CancellationToken cancellationToken)
     {
+        
         var request = new GetInvoiceByCustomerIdQuery(customerId);
         var invoices = await sender.Send(request, cancellationToken);
         return Ok(invoices);

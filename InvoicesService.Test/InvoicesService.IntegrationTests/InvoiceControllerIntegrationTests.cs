@@ -131,35 +131,4 @@ public class InvoiceControllerIntegrationTests : IClassFixture<InvoiceWebApplica
         await client.PostAsJsonAsync("api/v1/invoices", command);
         Assert.True(await harness.Published.Any<InvoiceCreatedEvent>());
     }
-    
-    // [Fact]
-    // public async Task CreateInvoice_ShouldPublishFault_WhenConsumerFails()
-    // {
-    //     await _factory.ResetDatabaseAsync();
-    //
-    //     using var scope = _factory.Services.CreateScope();
-    //
-    //     var harness = scope.ServiceProvider.GetRequiredService<ITestHarness>();
-    //     await harness.Start();
-    //
-    //     var client = _factory.CreateClient();
-    //
-    //     var command = new CreateInvoiceCommand(
-    //         1,
-    //         Guid.NewGuid(),
-    //         CurrencyType.USD,
-    //         [
-    //             new InvoiceItemCommand(1, 10, 400),
-    //             new InvoiceItemCommand(2, 10, 400),
-    //             new InvoiceItemCommand(3, 10, 400)
-    //         ]);
-    //
-    //     await client.PostAsJsonAsync("api/v1/invoices", command);
-    //
-    //     //Assert.True(
-    //       //  await harness.Published.Any<InvoiceCreatedEvent>());
-    //
-    //     Assert.True(
-    //         await harness.Consumed.Any<Fault<InvoiceCreatedFailingEvent>>());
-    // }
 }

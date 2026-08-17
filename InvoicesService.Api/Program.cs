@@ -4,12 +4,42 @@ using Domain.Respository;
 using Infrastructure;
 using Infrastructure.Persistance;
 using InvoicesService.Exceptions;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi;
+using Serilog;
+
+Log.Logger = new LoggerConfiguration()
+    .WriteTo.Console()
+    .CreateLogger();
 
 var builder = WebApplication.CreateBuilder(args);
 
+
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    // 1. Define the scheme
+    options.AddSecurityDefinition(JwtBearerDefaults.AuthenticationScheme, new OpenApiSecurityScheme
+    {
+        Type = SecuritySchemeType.Http,
+        Scheme = JwtBearerDefaults.AuthenticationScheme,
+        BearerFormat = "JWT",
+        Description = "Enter your JWT token directly."
+    });
+
+    // 2. Add security requirement using OpenApiSecuritySchemeReference
+    options.AddSecurityRequirement(doc => new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecuritySchemeReference(
+                JwtBearerDefaults.AuthenticationScheme, 
+                doc
+            ), 
+            []
+        }
+    });
+});
 
 builder.Services.AddHealthChecks();
 

@@ -21,6 +21,8 @@ public static class DependencyInjection
         this IServiceCollection services, 
         IConfiguration configuration)
     {
+        services.AddHttpClient();
+        
         services.AddScoped<IEventPublisher, EventPublisher>();
         services.AddScoped<IPdfGenerator, PdfGenerator>();
 
@@ -77,13 +79,13 @@ public static class DependencyInjection
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>
             {
-                options.Authority = configuration["Keycloak:Authority"];
-                options.Audience = configuration["Keycloak:Audience"];
+                options.Authority = configuration["Duende:Authority"];
+                options.Audience = configuration["Duende:Audience"];
                 options.RequireHttpsMetadata = false;
                 options.SaveToken = true;
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
-                    ValidateAudience = true,
+                    ValidateAudience = false,
                     ValidateIssuer = true
                 };
             });
