@@ -5,9 +5,6 @@ using Domain.Enums;
 using Domain.Respository;
 using FluentAssertions;
 using InvoicesService.Shared.Contracts.Events;
-using InvoicesServiceTest.Consumers;
-using InvoicesServiceTest.Events;
-using MassTransit;
 using MassTransit.Testing;
 using Microsoft.Extensions.DependencyInjection;
 
