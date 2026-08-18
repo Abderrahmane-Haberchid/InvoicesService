@@ -1,21 +1,26 @@
+
+using Application.Abstractions;
+using Serilog;
+
 namespace InvoicesService.Middleware;
 
-public class MultiTenacyMiddleware
+public class MultiTenacyMiddleware(
+    RequestDelegate next,
+    ITenantProvider tenantProvider)
 {
-    private readonly RequestDelegate _next;
-    public MultiTenacyMiddleware(RequestDelegate next)
-    {
-        _next = next;
-    }
 
     public async Task InvokeAsync(HttpContext context)
     {
-        var companyId = context.Request.Headers["companyId"].FirstOrDefault();
+        Log.Information("Invoking Multi-Tenacy Middleware");
         
-        if (string.IsNullOrEmpty(companyId))
+        var compId = context.User.Claims.FirstOrDefault(c => c.Type == "mf:cid")?.Value;
+
+        if (!Guid.TryParse(compId, out var companyId))
         {
-            throw new InvalidOperationException("CompanyId header is missing");
+            throw new UnauthorizedAccessException("Invalid company id");
         }
-        
+        tenantProvider.SetTenantId(companyId);
+
+        await next(context);
     }
 }

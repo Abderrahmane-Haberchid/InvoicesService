@@ -81,11 +81,11 @@ public static class DependencyInjection
             {
                 options.Authority = configuration["Duende:Authority"];
                 options.Audience = configuration["Duende:Audience"];
-                options.RequireHttpsMetadata = false;
+                options.RequireHttpsMetadata = true;
                 options.SaveToken = true;
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
-                    ValidateAudience = false,
+                    ValidateAudience = true,
                     ValidateIssuer = true
                 };
             });

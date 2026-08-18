@@ -1,13 +1,14 @@
 using Domain.DomainExceptions;
 using Domain.Enums;
+using Domain.Tenant;
 
 namespace Domain.Models;
 
 
-public class Invoice
+public class Invoice :  ITenant
 {
     public Guid Id { get; private set; }
-    public Guid CompanyId { get; private set; }
+    public Guid CompanyId { get; set; }
     
     private readonly List<InvoiceItem> _items = new();
     public IReadOnlyCollection<InvoiceItem> Items => _items;
@@ -89,5 +90,4 @@ public class Invoice
         }
         Status = status;
     }
-
 }

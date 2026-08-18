@@ -31,6 +31,8 @@ public class GlobalExceptionHandler : IExceptionHandler
             
             NullObjectReturnedFromCreateRepositoryException => (HttpStatusCode.BadRequest, "Invoice Creation Failed!"),
             
+            UnauthorizedAccessException => (HttpStatusCode.Unauthorized, "Not Authorized."),
+            
             _ => (HttpStatusCode.InternalServerError, "Internal server error")
         };
 

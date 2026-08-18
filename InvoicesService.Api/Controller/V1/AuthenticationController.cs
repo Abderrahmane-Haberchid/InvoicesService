@@ -1,5 +1,4 @@
 using Asp.Versioning;
-using Duende.IdentityModel;
 using Duende.IdentityModel.Client;
 using Microsoft.AspNetCore.Mvc;
 using Serilog;
@@ -15,30 +14,29 @@ public class AuthenticationController(
 {
 
     [HttpGet]
-    public async Task<IActionResult> Login()
+    public async Task<IActionResult> GetToken()
     {
         var client = httpClient.CreateClient();
         var discovery = await client.GetDiscoveryDocumentAsync(configuration["Duende:Authority"]);
-
+        
         if (discovery.IsError)
         {
-            Log.Error(discovery.Error);
+            Log.Error(discovery.Error!);
             return Unauthorized();
         }
 
         var tokenResponse = await client.RequestClientCredentialsTokenAsync(new ClientCredentialsTokenRequest
         {
             Address = discovery.TokenEndpoint,
-            ClientId = "abdoClientId",
-            ClientSecret = "this-is-a-secret-value-key",
-            Scope = "abdoScope"
+            ClientId = "mf-invoices-api",
+            ClientSecret = "top-secret"
         });
 
         if (tokenResponse.IsError)
         {
-            Log.Error(tokenResponse.Error);
+            Log.Error(tokenResponse.Error!);
             return BadRequest(tokenResponse.Error);
         }
-        return Ok(tokenResponse);
+        return Ok(tokenResponse.AccessToken);
     }
 }

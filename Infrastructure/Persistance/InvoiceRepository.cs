@@ -35,11 +35,18 @@ public class InvoiceRepository(
             .ToListAsync(cancellationToken);
     }
 
-    public Task<Invoice?> GetInvoiceByIdAsync(Guid invoiceId, CancellationToken cancellationToken)
+    public async Task<Invoice?> GetInvoiceByIdAsync(Guid invoiceId, CancellationToken cancellationToken)
     {
-        return dbContext.Invoices
+        return await dbContext.Invoices
             .Include(i => i.Items)
             .FirstOrDefaultAsync(i => i.Id == invoiceId,  cancellationToken);
+    }
+
+    public async Task<Invoice?> GetInvoiceByCompanyIdAsync(Guid companyId, CancellationToken cancellationToken)
+    {
+        return await dbContext.Invoices
+            .AsNoTracking()
+            .FirstOrDefaultAsync(i => i.CompanyId == companyId, cancellationToken);
     }
 
     private IQueryable<Invoice> GetInvoices()

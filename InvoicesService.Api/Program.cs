@@ -1,9 +1,12 @@
 using Application;
+using Application.Abstractions;
 using Asp.Versioning;
 using Domain.Respository;
 using Infrastructure;
 using Infrastructure.Persistance;
 using InvoicesService.Exceptions;
+using InvoicesService.Middleware;
+using InvoicesService.TenantProvider;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
@@ -15,6 +18,7 @@ Log.Logger = new LoggerConfiguration()
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddScoped<ITenantProvider, TenantProvider>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
@@ -87,14 +91,12 @@ using (var scope = app.Services.CreateScope())
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     await db.Database.MigrateAsync();
 }
-app.UseExceptionHandler();
-
 app.MapHealthChecks("/health");
 //app.UseHttpsRedirection();
-
+app.UseExceptionHandler();
 app.UseAuthentication();
 app.UseAuthorization();
-
+app.UseMiddleware<MultiTenacyMiddleware>();
 app.MapControllers();
 
 app.Run();
