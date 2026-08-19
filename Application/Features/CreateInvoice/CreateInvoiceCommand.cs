@@ -5,7 +5,6 @@ namespace Application.Features.CreateInvoice;
 
 public record CreateInvoiceCommand(
     int CustomerId,
-    Guid CompanyId,
     CurrencyType Currency,
     List<InvoiceItemCommand> Items
 ) : IRequest<CreateInvoiceResponse>;

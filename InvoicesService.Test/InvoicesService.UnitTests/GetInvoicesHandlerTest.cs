@@ -119,7 +119,7 @@ public class GetInvoicesHandlerTest
     }
 
     [Fact]
-    public async Task Handle_ShouldThrowKeyNotFoundException_WhenNoInvoiceFound()
+    public async Task Handle_ShouldReturnEmptyList_WhenNoInvoiceFound()
     {
         var query = new GetInvoicesQuery(1, 10);
         
@@ -129,8 +129,9 @@ public class GetInvoicesHandlerTest
                 It.IsAny<Func<CancellationToken, Task<List<GetInvoicesResponse>>>>(),
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<GetInvoicesResponse>());
-        
-        await Assert.ThrowsAsync<KeyNotFoundException>(() =>  _sut.Handle(query, CancellationToken.None));
+
+        var result = await _sut.Handle(query, CancellationToken.None);
+        result.Items.Should().BeEmpty();
     } 
     
     
@@ -138,9 +139,9 @@ public class GetInvoicesHandlerTest
     {
         return new List<Invoice>
         {
-            Invoice.Create(Guid.NewGuid(), 123, CurrencyType.EUR),
-            Invoice.Create(Guid.NewGuid(), 123, CurrencyType.EUR),
-            Invoice.Create(Guid.NewGuid(), 123, CurrencyType.EUR)
+            Invoice.Create(Guid.NewGuid(), Guid.NewGuid(), "test@test.com" ,123, CurrencyType.EUR),
+            Invoice.Create(Guid.NewGuid(), Guid.NewGuid(), "test@test.com", 123, CurrencyType.EUR),
+            Invoice.Create(Guid.NewGuid(), Guid.NewGuid(), "test@test.com", 123, CurrencyType.EUR)
         };
     }
 }

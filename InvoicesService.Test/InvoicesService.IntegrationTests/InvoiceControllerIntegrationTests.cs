@@ -33,7 +33,6 @@ public class InvoiceControllerIntegrationTests : IClassFixture<InvoiceWebApplica
         var client = _factory.CreateClient();
         var command = new CreateInvoiceCommand(
             1,
-            Guid.NewGuid(),
             CurrencyType.USD,
             [
                 new InvoiceItemCommand(1, 10, 400),
@@ -48,7 +47,6 @@ public class InvoiceControllerIntegrationTests : IClassFixture<InvoiceWebApplica
         Assert.NotNull(savedInvoice[0]);
         savedInvoice.Should().HaveCount(1);
         savedInvoice[0].CustomerId.Should().Be(command.CustomerId);
-        savedInvoice[0].CompanyId.Should().Be(command.CompanyId);
         savedInvoice[0].Currency.Should().Be(command.Currency);
         savedInvoice[0].Items.Should().HaveCount(command.Items.Count);
         
@@ -69,7 +67,6 @@ public class InvoiceControllerIntegrationTests : IClassFixture<InvoiceWebApplica
         var client = _factory.CreateClient();
         var command = new CreateInvoiceCommand(
             1,
-            Guid.NewGuid(),
             CurrencyType.USD,
             [
                 new InvoiceItemCommand(1, 10, 400),
@@ -95,7 +92,6 @@ public class InvoiceControllerIntegrationTests : IClassFixture<InvoiceWebApplica
         var client = _factory.CreateClient();
         var command = new CreateInvoiceCommand(
             1,
-            Guid.NewGuid(),
             CurrencyType.USD,
             [
                 new InvoiceItemCommand(1, 10, 400),
@@ -120,7 +116,6 @@ public class InvoiceControllerIntegrationTests : IClassFixture<InvoiceWebApplica
         var client = _factory.CreateClient();
         var command = new CreateInvoiceCommand(
             1,
-            Guid.NewGuid(),
             CurrencyType.USD,
             [
                 new InvoiceItemCommand(1, 10, 400),

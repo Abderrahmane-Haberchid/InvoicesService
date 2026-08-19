@@ -5,7 +5,6 @@ using Domain.Respository;
 using FluentValidation;
 using InvoicesService.Shared.Contracts.Events;
 using MediatR;
-using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Logging;
 
 namespace Application.Features.CreateInvoice;
@@ -14,6 +13,7 @@ public class CreateInvoiceHandler(
     IInvoiceRepository invoiceRepository,
     IValidator<CreateInvoiceCommand> validator,
     IEventPublisher eventPublisher,
+    ITenantProvider tenantProvider,
     ILogger<CreateInvoiceHandler> logger) 
     : IRequestHandler<CreateInvoiceCommand, CreateInvoiceResponse>
 {
@@ -32,7 +32,9 @@ public class CreateInvoiceHandler(
         
         
         var invoice = Invoice.Create(
-            request.CompanyId,
+            tenantProvider.TenantId,
+            tenantProvider.UserId,
+            tenantProvider.UserEmail,
             request.CustomerId,
             request.Currency);
         

@@ -83,6 +83,7 @@ public class GetInvoiceByCustomerIdHandlerTest
         {
             new GetInvoiceByCustomerIdResponse(
                 Guid.NewGuid(),
+                Guid.NewGuid(),
                 InvoiceStatus.CREATED,
                 Decimal.One,
                 CurrencyType.EUR,
@@ -100,9 +101,9 @@ public class GetInvoiceByCustomerIdHandlerTest
     {
         return new List<Invoice>
         {
-            Invoice.Create(Guid.NewGuid(), 123, CurrencyType.EUR),
-            Invoice.Create(Guid.NewGuid(), 123, CurrencyType.EUR),
-            Invoice.Create(Guid.NewGuid(), 123, CurrencyType.EUR)
+            Invoice.Create(Guid.NewGuid(), Guid.NewGuid(), "test@test.com", 123, CurrencyType.EUR),
+            Invoice.Create(Guid.NewGuid(), Guid.NewGuid(), "test@test.com", 123, CurrencyType.EUR),
+            Invoice.Create(Guid.NewGuid(), Guid.NewGuid(), "test@test.com", 123, CurrencyType.EUR)
         };
     }
 }

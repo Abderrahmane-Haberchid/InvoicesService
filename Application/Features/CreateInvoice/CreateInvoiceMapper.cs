@@ -9,6 +9,7 @@ public static class CreateInvoiceMapper
     {
         return new CreateInvoiceResponse(
             invoice.Id,
+            invoice.CompanyId,
             invoice.Status,
             invoice.Total,
             invoice.Currency,

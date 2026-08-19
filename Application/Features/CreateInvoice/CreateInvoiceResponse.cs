@@ -4,6 +4,7 @@ namespace Application.Features.CreateInvoice;
 
 public record CreateInvoiceResponse(
     Guid InvoiceId, 
+    Guid CompanyId,
     InvoiceStatus Status,
     decimal TotalAmount,
     CurrencyType Currency,

@@ -9,6 +9,7 @@ public static class GetInvoiceByCustomerIdMapper
     {
         return invoices.Select(i => new GetInvoiceByCustomerIdResponse(
                 i.Id,
+                i.CompanyId,
                 i.Status,
                 i.Total,
                 i.Currency,

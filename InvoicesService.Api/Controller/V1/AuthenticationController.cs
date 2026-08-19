@@ -32,11 +32,11 @@ public class AuthenticationController(
             ClientSecret = "top-secret"
         });
 
-        if (tokenResponse.IsError)
-        {
-            Log.Error(tokenResponse.Error!);
-            return BadRequest(tokenResponse.Error);
-        }
-        return Ok(tokenResponse.AccessToken);
+        if (!tokenResponse.IsError) 
+            return Ok(tokenResponse.AccessToken);
+        
+        Log.Error(tokenResponse.Error!);
+        
+        return BadRequest(tokenResponse.Error);
     }
 }

@@ -9,6 +9,7 @@ public static class GetInvoiceByIdMapper
     {
         return new GetInvoiceByIdResponse(
             invoice.Id,
+            invoice.CompanyId,
             invoice.Status,
             invoice.Total,
             invoice.Currency,

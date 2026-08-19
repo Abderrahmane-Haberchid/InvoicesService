@@ -27,7 +27,7 @@ public class GetInvoiceByIdHandlerTest
     public async Task Handle_ShouldReturnGetInvoiceByIdResponse_WhenRulesPasse()
     {
         var query = new GetInvoiceByIdQuery(Guid.NewGuid());
-        var invoice = Invoice.Create(Guid.NewGuid(), 123, CurrencyType.EUR);
+        var invoice = Invoice.Create(Guid.NewGuid(), Guid.NewGuid(), "test@test.com", 123, CurrencyType.EUR);
         
         _invoiceRepositoryMock
             .Setup(x => x.GetInvoiceByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))

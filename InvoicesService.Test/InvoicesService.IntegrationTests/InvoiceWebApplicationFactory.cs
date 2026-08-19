@@ -15,8 +15,7 @@ using Testcontainers.Redis;
 
 namespace InvoicesServiceTest.InvoicesService.IntegrationTests;
 
-public class InvoiceWebApplicationFactory
-    : WebApplicationFactory<Program>, IAsyncLifetime
+public class InvoiceWebApplicationFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
     private Respawner? _respawner;
     private NpgsqlConnection _dbConnection;
@@ -50,24 +49,19 @@ public class InvoiceWebApplicationFactory
         _dbConnection = new NpgsqlConnection(_postgreSqlContainer.GetConnectionString());
         _dbConnection.Open();
         
-        await ApplyMigrationsAsync();
-        await InitializeRespawnerAsync();
         // Force the ASP.NET test host to be created.
         _ = Services;
-    }
-
-    private async Task ApplyMigrationsAsync()
-    {
-        using var scope = Services.CreateScope();
-
-        var dbContext = scope.ServiceProvider
-            .GetRequiredService<AppDbContext>();
-
-        await dbContext.Database.MigrateAsync();
+        
+        await InitializeRespawnerAsync();
+        
     }
 
     private async Task InitializeRespawnerAsync()
     {
+        using var scope = Services.CreateScope();
+        var database = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        await database.Database.EnsureCreatedAsync();
+        
         _respawner = await Respawner.CreateAsync(
             _dbConnection,
             new RespawnerOptions

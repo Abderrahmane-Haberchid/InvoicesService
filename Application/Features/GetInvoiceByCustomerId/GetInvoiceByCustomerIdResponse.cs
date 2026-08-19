@@ -4,6 +4,7 @@ namespace Application.Features.GetInvoiceByCustomerId;
 
 public record GetInvoiceByCustomerIdResponse(
     Guid InvoiceId, 
+    Guid CompanyId,
     InvoiceStatus Status,
     decimal TotalAmount,
     CurrencyType Currency,

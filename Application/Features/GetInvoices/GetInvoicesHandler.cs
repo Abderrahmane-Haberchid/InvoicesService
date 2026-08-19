@@ -38,8 +38,6 @@ public class GetInvoicesHandler(
             );
         
         
-        return invoices.Count == 0 
-            ? throw new KeyNotFoundException("No invoices found") 
-            : invoices.ToPagedList(request!.Page, request.PageSize);
+        return invoices.ToPagedList(request!.Page, request.PageSize);
     }
 }

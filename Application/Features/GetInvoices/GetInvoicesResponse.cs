@@ -3,6 +3,7 @@ using Domain.Enums;
 
 public record GetInvoicesResponse(
     Guid InvoiceId, 
+    Guid CompanyId,
     InvoiceStatus Status,
     decimal TotalAmount,
     CurrencyType Currency,

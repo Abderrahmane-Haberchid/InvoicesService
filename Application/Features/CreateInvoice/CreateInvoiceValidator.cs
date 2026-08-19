@@ -8,10 +8,6 @@ public class CreateInvoiceValidator : AbstractValidator<CreateInvoiceCommand>{
         RuleFor(x => x.CustomerId)
             .GreaterThan(0)
             .WithMessage("CustomerId must be greater than zero and not empty");
-        
-        RuleFor(x => x.CompanyId)
-            .NotEmpty()
-            .WithMessage("CompanyId must not be empty");
 
         RuleFor(x => x.Currency)
             .IsInEnum()

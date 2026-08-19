@@ -10,6 +10,9 @@ public class Invoice :  ITenant
     public Guid Id { get; private set; }
     public Guid CompanyId { get; set; }
     
+    public Guid UserId { get; set; }
+    public string UserEmail { get; set; }
+    
     private readonly List<InvoiceItem> _items = new();
     public IReadOnlyCollection<InvoiceItem> Items => _items;
     public int CustomerId { get; private set; }
@@ -21,6 +24,8 @@ public class Invoice :  ITenant
     private Invoice(
         Guid id, 
         Guid companyId, 
+        Guid userId,
+        string userEmail,
         int  customerId,
         CurrencyType currency, 
         decimal total, 
@@ -29,6 +34,8 @@ public class Invoice :  ITenant
     {
         Id = id;
         CompanyId = companyId;
+        UserId = userId;
+        UserEmail = userEmail;
         CustomerId = customerId;
         Currency = currency;
         Total = total;
@@ -37,18 +44,31 @@ public class Invoice :  ITenant
     }
 
     public static Invoice Create(
-        Guid companyId, 
+        Guid companyId,
+        Guid userId,
+        string userEmail,
         int customerId,
         CurrencyType currency)
     {
-        if (string.IsNullOrEmpty(companyId.ToString()) ||
-            customerId <= 0 ||
-            string.IsNullOrEmpty(currency.ToString()))
-            throw new InvalidInvoiceDataException("Invoice Data (CompanyId, CustomerId, Currency) are missing!");
+        if (companyId == Guid.Empty || customerId <= 0 || 
+            !Enum.IsDefined(typeof(CurrencyType), currency) || 
+            userId == Guid.Empty || string.IsNullOrWhiteSpace(userEmail))
+        {
+            throw new InvalidInvoiceDataException("Invoice Data (CompanyId, CustomerId, Currency) are missing!");   
+        }
 
         var invoiceId = Guid.NewGuid();
         
-        return new Invoice(invoiceId, companyId, customerId, currency, 0.0m, DateTime.UtcNow, InvoiceStatus.CREATED);
+        return new Invoice(
+            invoiceId, 
+            companyId,
+            userId,
+            userEmail,
+            customerId, 
+            currency, 
+            0.0m, 
+            DateTime.UtcNow, 
+            InvoiceStatus.CREATED);
     }
 
     public void AddInvoiceItem(int productId, int quantity, decimal unitPrice)

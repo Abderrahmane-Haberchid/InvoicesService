@@ -1,12 +1,12 @@
 using Application.Abstractions;
 using Application.Exceptions;
 using Application.Features.CreateInvoice;
+using Domain.DomainExceptions;
 using Domain.Enums;
 using Domain.Models;
 using Domain.Respository;
 using FluentAssertions;
 using FluentValidation;
-using FluentValidation.Results;
 using InvoicesService.Shared.Contracts.Events;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -19,6 +19,7 @@ public class CreateInvoiceHandlerTest
     private readonly Mock<IInvoiceRepository> _invoiceRepositoryMock;
     private readonly Mock<IEventPublisher> _eventPublisherMock;
     private readonly CreateInvoiceValidator _validator;
+    private readonly Mock<ITenantProvider>  _tenantProviderMock;
     private ILogger<CreateInvoiceHandlerTest> _logger;
     
     private CreateInvoiceHandler _sut;
@@ -28,16 +29,22 @@ public class CreateInvoiceHandlerTest
         _invoiceRepositoryMock = new Mock<IInvoiceRepository>();
         _eventPublisherMock = new Mock<IEventPublisher>();
         _validator = new CreateInvoiceValidator();
+        _tenantProviderMock = new Mock<ITenantProvider>();
         
         _invoiceRepositoryMock
             .Setup(x => 
                 x.CreateInvoiceAsync(It.IsAny<Invoice>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((Invoice invoice, CancellationToken _) => invoice);
+
+        _tenantProviderMock.Setup(x => x.TenantId).Returns(Guid.NewGuid());
+        _tenantProviderMock.Setup(x => x.UserId).Returns(Guid.NewGuid());
+        _tenantProviderMock.Setup(x => x.UserEmail).Returns("test@test.com");
         
         _sut = new CreateInvoiceHandler(
             _invoiceRepositoryMock.Object,
             _validator,
             _eventPublisherMock.Object,
+            _tenantProviderMock.Object,
             NullLogger<CreateInvoiceHandler>.Instance);
     }
     
@@ -47,7 +54,6 @@ public class CreateInvoiceHandlerTest
     {
         var command = new CreateInvoiceCommand(
             1,
-            Guid.NewGuid(),
             CurrencyType.USD,
             [
                 new InvoiceItemCommand(1, 10, 400),
@@ -60,8 +66,7 @@ public class CreateInvoiceHandlerTest
         _invoiceRepositoryMock
             .Verify(x => 
                 x.CreateInvoiceAsync(It.Is<Invoice>(
-                    i => i.CompanyId == command.CompanyId &&
-                         i.CustomerId == command.CustomerId &&
+                    i => i.CustomerId == command.CustomerId &&
                          i.Items.Count == command.Items.Count), 
                     It.IsAny<CancellationToken>()), 
                 Times.Once);
@@ -87,7 +92,6 @@ public class CreateInvoiceHandlerTest
     {
         var command = new CreateInvoiceCommand(
             1,
-            Guid.NewGuid(),
             CurrencyType.USD,
             [
                 new InvoiceItemCommand(1, 10, 400),
@@ -107,7 +111,6 @@ public class CreateInvoiceHandlerTest
     {
         var command = new CreateInvoiceCommand(
             1,
-            Guid.NewGuid(),
             CurrencyType.USD,
             [
                 new InvoiceItemCommand(1, 10, 400),
@@ -131,7 +134,6 @@ public class CreateInvoiceHandlerTest
     {
         var command = new CreateInvoiceCommand(
             0,
-            Guid.NewGuid(),
             CurrencyType.USD,
             [
                 new InvoiceItemCommand(1, 10, 400),
@@ -155,7 +157,6 @@ public class CreateInvoiceHandlerTest
     {
         var command = new CreateInvoiceCommand(
             1,
-            Guid.Empty,
             CurrencyType.USD,
             [
                 new InvoiceItemCommand(1, 10, 400),
@@ -163,7 +164,9 @@ public class CreateInvoiceHandlerTest
                 new InvoiceItemCommand(3, 10, 400)
             ]);
         
-        await Assert.ThrowsAsync<ValidationException>(() =>  _sut.Handle(command, CancellationToken.None));
+        _tenantProviderMock.Setup(x => x.TenantId).Returns(Guid.Empty);
+        
+        await Assert.ThrowsAsync<InvalidInvoiceDataException>(() =>  _sut.Handle(command, CancellationToken.None));
         
         _invoiceRepositoryMock.Verify(x => 
             x.CreateInvoiceAsync(It.IsAny<Invoice>(), It.IsAny<CancellationToken>()), 
@@ -179,7 +182,6 @@ public class CreateInvoiceHandlerTest
     {
         var command = new CreateInvoiceCommand(
             1,
-            Guid.NewGuid(),
             CurrencyType.USD,
             []);
         
