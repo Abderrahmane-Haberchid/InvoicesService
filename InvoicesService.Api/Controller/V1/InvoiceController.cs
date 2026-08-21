@@ -1,14 +1,11 @@
-using Application.Abstractions;
 using Application.Features.CreateInvoice;
 using Application.Features.GetInvoiceByCustomerId;
 using Application.Features.GetInvoiceById;
 using Application.Features.GetInvoices;
 using Asp.Versioning;
-using InvoicesService.Shared.Contracts.Events;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Serilog;
 
 namespace InvoicesService.Controller.V1;
 
@@ -17,8 +14,7 @@ namespace InvoicesService.Controller.V1;
 [Authorize]
 [Route("api/v{apiVersion:apiVersion}/invoices")]
 public class InvoiceController(
-    ISender sender,
-    ILogger<InvoiceController> logger) 
+    ISender sender) 
     : ControllerBase
 {
     

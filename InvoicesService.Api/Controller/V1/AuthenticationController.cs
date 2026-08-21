@@ -28,8 +28,8 @@ public class AuthenticationController(
         var tokenResponse = await client.RequestClientCredentialsTokenAsync(new ClientCredentialsTokenRequest
         {
             Address = discovery.TokenEndpoint,
-            ClientId = "mf-invoices-api",
-            ClientSecret = "top-secret"
+            ClientId = "mf-invoices-api2",
+            ClientSecret = "top-secret",
         });
 
         if (!tokenResponse.IsError) 

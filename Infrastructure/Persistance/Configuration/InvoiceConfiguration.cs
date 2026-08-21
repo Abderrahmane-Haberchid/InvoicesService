@@ -19,9 +19,6 @@ public class InvoiceConfiguration(ITenantProvider tenantProvider) :  IEntityType
             .HasForeignKey(i => i.InvoiceId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        builder.Property(i => i.Status)
-            .HasConversion<string>();
-
         builder.HasIndex(i => i.CompanyId);
 
         builder.HasQueryFilter(i => i.CompanyId == tenantProvider.TenantId);

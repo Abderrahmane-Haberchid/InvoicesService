@@ -50,9 +50,15 @@ public class Invoice :  ITenant
         int customerId,
         CurrencyType currency)
     {
+<<<<<<< HEAD
         if (companyId == Guid.Empty || customerId <= 0 || 
             !Enum.IsDefined(typeof(CurrencyType), currency) || 
             userId == Guid.Empty || string.IsNullOrWhiteSpace(userEmail))
+=======
+        if (string.IsNullOrEmpty(companyId.ToString()) ||
+            customerId <= 0 ||
+            !Enum.IsDefined(currency))
+>>>>>>> c86371a (dbcontext bug fixed + k8s)
         {
             throw new InvalidInvoiceDataException("Invoice Data (CompanyId, CustomerId, Currency) are missing!");   
         }

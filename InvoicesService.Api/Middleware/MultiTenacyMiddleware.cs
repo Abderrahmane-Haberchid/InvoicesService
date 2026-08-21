@@ -25,6 +25,15 @@ public class MultiTenacyMiddleware(
             return;
         }
         
+        var endpointAuth = context.GetEndpoint();
+
+        var authorized = endpointAuth?.Metadata.GetMetadata<IAuthorizeData>() is not null;
+        if(!authorized)
+        {
+            await next(context);
+            return;
+        }
+        
         var compId = context.User.Claims.FirstOrDefault(c => c.Type == "mf:cid")?.Value;
         var usrId = context.User.Claims.FirstOrDefault(c => c.Type == "mf:uid")?.Value;
         var userEmail = context.User.Claims.FirstOrDefault(c => c.Type == "email")?.Value;

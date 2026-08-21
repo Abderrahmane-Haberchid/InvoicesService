@@ -8,7 +8,6 @@ using InvoicesService.Exceptions;
 using InvoicesService.Middleware;
 using InvoicesService.TenantProvider;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
 using Serilog;
 
@@ -17,6 +16,7 @@ Log.Logger = new LoggerConfiguration()
     .CreateLogger();
 
 var builder = WebApplication.CreateBuilder(args);
+
 
 builder.Services.AddScoped<ITenantProvider, TenantProvider>();
 
@@ -89,10 +89,11 @@ if (app.Environment.IsDevelopment())
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    await db.Database.MigrateAsync();
+    await db.Database.EnsureDeletedAsync();
+    await db.Database.EnsureCreatedAsync();
 }
 app.MapHealthChecks("/health");
-//app.UseHttpsRedirection();
+app.UseHttpsRedirection();
 app.UseExceptionHandler();
 app.UseAuthentication();
 app.UseAuthorization();
