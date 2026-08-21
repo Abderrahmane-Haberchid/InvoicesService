@@ -1,12 +1,15 @@
-
 using Infrastructure.Persistance;
 using InvoicesServiceTest.Consumers;
+using InvoicesServiceTest.InvoicesService.IntegrationTests.TestAuth;
 using MassTransit;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Options;
 using Npgsql;
 using Respawn;
 using Testcontainers.PostgreSql;
@@ -45,10 +48,6 @@ public class InvoiceWebApplicationFactory : WebApplicationFactory<Program>, IAsy
             _rabbitMqContainer.StartAsync(),
             _redisContainer.StartAsync()
         );
-        
-        _dbConnection = new NpgsqlConnection(_postgreSqlContainer.GetConnectionString());
-        _dbConnection.Open();
-        
         // Force the ASP.NET test host to be created.
         _ = Services;
         
@@ -61,6 +60,9 @@ public class InvoiceWebApplicationFactory : WebApplicationFactory<Program>, IAsy
         using var scope = Services.CreateScope();
         var database = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         await database.Database.EnsureCreatedAsync();
+        
+        _dbConnection = new NpgsqlConnection(_postgreSqlContainer.GetConnectionString());
+        _dbConnection.Open();
         
         _respawner = await Respawner.CreateAsync(
             _dbConnection,
@@ -77,20 +79,32 @@ public class InvoiceWebApplicationFactory : WebApplicationFactory<Program>, IAsy
 
         for (var i = 0; i < 50; i++)
         {
-            using var scope = Services.CreateScope();
-
-            var db = scope.ServiceProvider
-                .GetRequiredService<AppDbContext>();
-
-            var hasMessages = await db.OutboxMessages.AnyAsync();
-
-            if (!hasMessages)
+            try
             {
-                await _respawner.ResetAsync(_dbConnection);
-                return;
-            }
+                await _semaphoreSlim.WaitAsync();
+                using var scope = Services.CreateScope();
 
-            await Task.Delay(100);
+                var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+                var hasMessages = await db.OutboxMessages.AnyAsync();
+
+                if (!hasMessages)
+                {
+                    await _respawner.ResetAsync(_dbConnection);
+                    return;
+                }
+
+                await Task.Delay(100);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+            finally
+            {
+                _semaphoreSlim.Release();
+            }
         }
 
         throw new TimeoutException(
@@ -103,6 +117,11 @@ public class InvoiceWebApplicationFactory : WebApplicationFactory<Program>, IAsy
 
         builder.ConfigureServices(services =>
         {
+            services.RemoveAll<IConfigureOptions<AuthenticationOptions>>();
+            
+            services.AddAuthentication("TestScheme")
+                .AddScheme<AuthenticationSchemeOptions, TestAuthHandler>("TestScheme", _ => { });
+            
             services.AddMassTransitTestHarness(x =>
             {
                 x.AddConsumer<CreatedInvoiceConsumerTest>();
@@ -140,7 +159,8 @@ public class InvoiceWebApplicationFactory : WebApplicationFactory<Program>, IAsy
             _rabbitMqContainer.DisposeAsync().AsTask(),
             _redisContainer.DisposeAsync().AsTask()
         );
-
+        
+        _dbConnection.Dispose();
         _semaphoreSlim.Dispose();
         await DisposeAsyncCore();
     }
