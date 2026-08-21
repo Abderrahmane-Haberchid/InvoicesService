@@ -10,7 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace InvoicesServiceTest.InvoicesService.IntegrationTests;
 
-
+[Collection("IntegrationTests")]
 public class InvoiceControllerIntegrationTests : IClassFixture<InvoiceWebApplicationFactory>
 {
 
