@@ -5,8 +5,7 @@ using Serilog;
 
 namespace InvoicesService.Middleware;
 
-public class MultiTenacyMiddleware(
-    RequestDelegate next)
+public class MultiTenacyMiddleware(RequestDelegate next)
 {
 
     public async Task InvokeAsync(HttpContext context, ITenantProvider tenantProvider)
@@ -20,15 +19,6 @@ public class MultiTenacyMiddleware(
         var isAuthData = endpoint?.Metadata.GetMetadata<IAuthorizeData>() is not null;
 
         if (!isAuthData)
-        {
-            await next(context);
-            return;
-        }
-        
-        var endpointAuth = context.GetEndpoint();
-
-        var authorized = endpointAuth?.Metadata.GetMetadata<IAuthorizeData>() is not null;
-        if(!authorized)
         {
             await next(context);
             return;

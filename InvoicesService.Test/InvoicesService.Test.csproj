@@ -31,8 +31,4 @@
       <ProjectReference Include="..\InvoicesService.Api\InvoicesService.Api.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="InvoicesService.IntegrationTests\MassTransit\" />
-    </ItemGroup>
-
 </Project>
