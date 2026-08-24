@@ -1,0 +1,20 @@
+apiVersion: skaffold/v4beta13
+kind: Config
+
+metadata:
+  name: invoices-service
+
+build:
+  local:
+    push: false
+  artifacts:
+    - image: invoices-service
+      docker:
+        dockerfile: Dockerfile
+
+manifests:
+  rawYaml:
+    - k8s/**/*.yaml
+
+deploy:
+  kubectl: {}
