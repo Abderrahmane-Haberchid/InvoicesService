@@ -1,21 +1,22 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: invoices-service-deployment
+  name: invoices-deployment
+  namespace: invoices-ns
   labels:
-    app: invoices-service
+    app: invoices
 
 spec:
-  replicas: 2
+  replicas: 1
 
   selector:
     matchLabels:
-      app: invoices-service
+      app: invoices
 
   template:
     metadata:
       labels:
-        app: invoices-service
+        app: invoices
 
     spec:
       initContainers:
@@ -32,7 +33,7 @@ spec:
               echo "PostgreSQL is up and running!"
               
       containers:
-        - name: invoices-service
+        - name: invoices-pod
           image: invoices-service
           imagePullPolicy: IfNotPresent
 

@@ -2,17 +2,21 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: postgres-deployment
+  namespace: invoices-ns
   labels:
     app: postgres
+    
 spec:
   replicas: 1
   selector:
     matchLabels:
       app: postgres
+      
   template:
     metadata:
       labels:
         app: postgres
+        
     spec:
       containers:
         - name: postgres
@@ -26,20 +30,24 @@ spec:
                 secretKeyRef:
                   name: postgres-secret
                   key: POSTGRES_USER
+                  
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: postgres-secret
                   key: POSTGRES_PASSWORD
+                  
             - name: POSTGRES_DB
               valueFrom:
                 secretKeyRef:
                   name: postgres-secret
                   key: POSTGRES_DB
+                  
           # Optional: Use if you need basic storage testing. Production needs a PVC.
           volumeMounts:
             - name: postgres-storage
               mountPath: /var/lib/postgresql/data
+              
       volumes:
         - name: postgres-storage
           emptyDir: {}
