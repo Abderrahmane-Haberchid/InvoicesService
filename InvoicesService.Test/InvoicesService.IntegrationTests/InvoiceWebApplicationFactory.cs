@@ -59,6 +59,7 @@ public class InvoiceWebApplicationFactory : WebApplicationFactory<Program>, IAsy
     {
         using var scope = Services.CreateScope();
         var database = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        await database.Database.EnsureDeletedAsync();
         await database.Database.EnsureCreatedAsync();
         
         _dbConnection = new NpgsqlConnection(_postgreSqlContainer.GetConnectionString());

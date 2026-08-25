@@ -27,18 +27,12 @@ public class TestAuthHandler : AuthenticationHandler<AuthenticationSchemeOptions
             new Claim("email", TestClaims.Email),
         };
 
-        var identity = new ClaimsIdentity(
-            claims,
-            authenticationType: "TestScheme");
+        var identity = new ClaimsIdentity(claims, authenticationType: "TestScheme");
 
         var principal = new ClaimsPrincipal(identity);
 
-        var ticket = new AuthenticationTicket(
-            principal,
-            "TestScheme");
+        var ticket = new AuthenticationTicket(principal, "TestScheme");
 
-        return Task.FromResult(
-            AuthenticateResult.Success(ticket));
-
+        return Task.FromResult(AuthenticateResult.Success(ticket));
     }
 }

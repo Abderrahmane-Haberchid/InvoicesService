@@ -17,7 +17,15 @@ public class AuthenticationController(
     public async Task<IActionResult> GetToken()
     {
         var client = httpClient.CreateClient();
-        var discovery = await client.GetDiscoveryDocumentAsync(configuration["Duende:Authority"]);
+        var discovery = await client.GetDiscoveryDocumentAsync(
+            new DiscoveryDocumentRequest
+            {
+                Address = configuration["Duende:Authority"]!,
+                Policy = new DiscoveryPolicy
+                {
+                    RequireHttps = false
+                }
+            });
         
         if (discovery.IsError)
         {
