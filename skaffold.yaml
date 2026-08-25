@@ -17,4 +17,5 @@ manifests:
     - k8s/**/*.yaml
 
 deploy:
-  kubectl: {}
+  kubectl:
+    defaultNamespace: invoices-ns

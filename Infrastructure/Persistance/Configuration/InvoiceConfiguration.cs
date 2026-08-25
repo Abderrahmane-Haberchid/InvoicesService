@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Infrastructure.Persistance.Configuration;
 
-public class InvoiceConfiguration(ITenantProvider tenantProvider) :  IEntityTypeConfiguration<Invoice>
+public class InvoiceConfiguration :  IEntityTypeConfiguration<Invoice>
 {
     public void Configure(EntityTypeBuilder<Invoice> builder)
     {
@@ -21,6 +21,6 @@ public class InvoiceConfiguration(ITenantProvider tenantProvider) :  IEntityType
 
         builder.HasIndex(i => i.CompanyId);
 
-        builder.HasQueryFilter(i => i.CompanyId == tenantProvider.TenantId);
+        //builder.HasQueryFilter(i => i.CompanyId == tenantProvider.TenantId);
     }
 }

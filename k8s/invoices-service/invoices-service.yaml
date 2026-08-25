@@ -3,13 +3,13 @@ kind: Service
 metadata:
   name: invoices-service
   labels:
-    app: invoices-service
+    app: invoices
 
 spec:
-  type: LoadBalancer
+  type: ClusterIP
 
   selector:
-    app: invoices-service
+    app: invoices
 
   ports:
     - name: http
