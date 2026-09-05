@@ -37,8 +37,6 @@ public class CreateInvoiceHandlerTest
             .ReturnsAsync((Invoice invoice, CancellationToken _) => invoice);
 
         _tenantProviderMock.Setup(x => x.TenantId).Returns(Guid.NewGuid());
-        _tenantProviderMock.Setup(x => x.UserId).Returns(Guid.NewGuid());
-        _tenantProviderMock.Setup(x => x.UserEmail).Returns("test@test.com");
         
         _sut = new CreateInvoiceHandler(
             _invoiceRepositoryMock.Object,

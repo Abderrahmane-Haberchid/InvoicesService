@@ -96,12 +96,15 @@ public class MassTransitTests
         
         await provider.GetRequiredService<IPublishEndpoint>()
             .Publish(createdEvent);
+        
         await provider.GetRequiredService<IPublishEndpoint>()
             .Publish(createdEvent);
+        
         await provider.GetRequiredService<IPublishEndpoint>()
             .Publish(createdEvent);
         
         var consumed = await harness.Consumed.SelectAsync<InvoiceCreatedEvent>().CountAsync();
+        
         consumed.Should().Be(3);
         CreatedInvoiceConsumerTest.CustomerIds.Count.Should().Be(1);
     }

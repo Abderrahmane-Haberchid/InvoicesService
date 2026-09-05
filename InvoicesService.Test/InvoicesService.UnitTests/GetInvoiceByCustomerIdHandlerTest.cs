@@ -67,16 +67,6 @@ public class GetInvoiceByCustomerIdHandlerTest
         
         await Assert.ThrowsAsync<KeyNotFoundException>(() => _sut.Handle(query, CancellationToken.None));
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-
     private List<GetInvoiceByCustomerIdResponse> GenerateInvoiceResponse()
     {
         return new List<GetInvoiceByCustomerIdResponse>
@@ -101,9 +91,9 @@ public class GetInvoiceByCustomerIdHandlerTest
     {
         return new List<Invoice>
         {
-            Invoice.Create(Guid.NewGuid(), Guid.NewGuid(), "test@test.com", 123, CurrencyType.EUR),
-            Invoice.Create(Guid.NewGuid(), Guid.NewGuid(), "test@test.com", 123, CurrencyType.EUR),
-            Invoice.Create(Guid.NewGuid(), Guid.NewGuid(), "test@test.com", 123, CurrencyType.EUR)
+            Invoice.Create(Guid.NewGuid(), 123, CurrencyType.EUR),
+            Invoice.Create(Guid.NewGuid(), 123, CurrencyType.EUR),
+            Invoice.Create(Guid.NewGuid(), 123, CurrencyType.EUR)
         };
     }
 }

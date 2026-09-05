@@ -33,8 +33,6 @@ public class CreateInvoiceHandler(
         
         var invoice = Invoice.Create(
             tenantProvider.TenantId,
-            tenantProvider.UserId,
-            tenantProvider.UserEmail,
             request.CustomerId,
             request.Currency);
         

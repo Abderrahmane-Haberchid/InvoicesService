@@ -139,9 +139,9 @@ public class GetInvoicesHandlerTest
     {
         return new List<Invoice>
         {
-            Invoice.Create(Guid.NewGuid(), Guid.NewGuid(), "test@test.com" ,123, CurrencyType.EUR),
-            Invoice.Create(Guid.NewGuid(), Guid.NewGuid(), "test@test.com", 123, CurrencyType.EUR),
-            Invoice.Create(Guid.NewGuid(), Guid.NewGuid(), "test@test.com", 123, CurrencyType.EUR)
+            Invoice.Create(Guid.NewGuid(),123, CurrencyType.EUR),
+            Invoice.Create(Guid.NewGuid(), 123, CurrencyType.EUR),
+            Invoice.Create(Guid.NewGuid(), 123, CurrencyType.EUR)
         };
     }
 }

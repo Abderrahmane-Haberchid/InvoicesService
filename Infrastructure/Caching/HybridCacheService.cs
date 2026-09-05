@@ -16,9 +16,7 @@ public class HybridCacheService(HybridCache hybridCache) : ICacheService
             cancellationToken: cancellationToken);
     }
 
-    public async Task RemoveAsync(
-        string key,
-        CancellationToken cancellationToken = default)
+    public async Task RemoveAsync(string key, CancellationToken cancellationToken = default)
     {
         await hybridCache.RemoveAsync(key, cancellationToken);
     }
