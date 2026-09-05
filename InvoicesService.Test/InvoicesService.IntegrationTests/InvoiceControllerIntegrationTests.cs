@@ -13,7 +13,7 @@ namespace InvoicesServiceTest.InvoicesService.IntegrationTests;
 [Collection("IntegrationTests")]
 public class InvoiceControllerIntegrationTests : IClassFixture<InvoiceWebApplicationFactory>
 {
-
+    
     private readonly InvoiceWebApplicationFactory _factory;
     
     public InvoiceControllerIntegrationTests(InvoiceWebApplicationFactory factory)

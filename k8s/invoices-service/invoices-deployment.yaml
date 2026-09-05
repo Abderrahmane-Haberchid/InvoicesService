@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: invoices-deployment
+  namespace: invoices-ns
+  labels:
+    app: invoices
+
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: invoices
+
+  template:
+    metadata:
+      labels:
+        app: invoices
+
+    spec:
+      initContainers:
+        - name: wait-for-postgres
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - |
+              until nc -z -v -w 2 postgres-service 5432; do
+                echo "Waiting for PostgreSQL database to accept connections..."
+                sleep 2
+              done
+              echo "PostgreSQL is up and running!"
+              
+      containers:
+        - name: invoices-pod
+          image: invoices-service
+          imagePullPolicy: IfNotPresent
+
+          ports:
+            - containerPort: 8080
+              name: http
+
+          envFrom:
+            - secretRef:
+                name: invoices-secret
