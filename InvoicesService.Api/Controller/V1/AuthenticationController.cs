@@ -42,6 +42,7 @@ public class AuthenticationController(
 
         if (tokenResponse.IsError)
         {
+            
             Log.Error(tokenResponse.Error!);
             return BadRequest(tokenResponse.Error);
         }

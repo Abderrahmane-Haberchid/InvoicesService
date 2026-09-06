@@ -2,7 +2,7 @@ using Application.Abstractions;
 using Application.Common;
 using Application.Features.GetInvoices;
 using Domain.Enums;
-using Domain.Models;
+using Domain.Models.Invoice;
 using Domain.Respository;
 using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;

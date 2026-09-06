@@ -1,6 +1,7 @@
 using Application.Exceptions;
 using Domain.Enums;
 using Domain.Models;
+using Domain.Models.Invoice;
 using Domain.Respository;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;

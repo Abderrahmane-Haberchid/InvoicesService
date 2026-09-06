@@ -1,6 +1,7 @@
 using Application.Features.GetInvoiceByCustomerId;
 using Domain.Enums;
 using Domain.Models;
+using Domain.Models.Invoice;
 using Domain.Respository;
 using FluentAssertions;
 using Moq;

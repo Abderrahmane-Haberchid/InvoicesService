@@ -1,11 +1,11 @@
+using Domain.Common;
 using Domain.DomainExceptions;
 using Domain.Enums;
-using Domain.Tenant;
 
-namespace Domain.Models;
+namespace Domain.Models.Invoice;
 
 
-public class Invoice :  ITenant
+public class Invoice : AggregateRoot
 {
     public Guid Id { get; private set; }
     public Guid CompanyId { get; set; }
@@ -25,7 +25,7 @@ public class Invoice :  ITenant
         CurrencyType currency, 
         decimal total, 
         DateTime createdAt, 
-        InvoiceStatus status)
+        InvoiceStatus status) : base(id)
     {
         Id = id;
         CompanyId = companyId;
@@ -86,7 +86,7 @@ public class Invoice :  ITenant
     {
         if (Status == status)
         {
-            throw new InvoiceStatusAlreadyAssignedException($"Invoice already has an assigned status {status}");
+            throw new InvoiceStatusAlreadyAssignedException($"Invoice already has same status {status}");
         }
         Status = status;
     }

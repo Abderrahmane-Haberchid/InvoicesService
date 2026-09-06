@@ -45,13 +45,6 @@ namespace Infrastructure.Migrations
                     b.Property<decimal>("Total")
                         .HasColumnType("numeric");
 
-                    b.Property<string>("UserEmail")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
                     b.HasKey("Id");
 
                     b.HasIndex("CompanyId");
