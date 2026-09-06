@@ -1,13 +1,13 @@
 using Domain.Common;
 using Domain.DomainExceptions;
 using Domain.Enums;
+using Domain.Models.Invoice.Events;
 
 namespace Domain.Models.Invoice;
 
 
 public class Invoice : AggregateRoot
 {
-    public Guid Id { get; private set; }
     public Guid CompanyId { get; set; }
     
     private readonly List<InvoiceItem> _items = new();
@@ -19,15 +19,13 @@ public class Invoice : AggregateRoot
     public InvoiceStatus Status { get; private set; }
 
     private Invoice(
-        Guid id, 
         Guid companyId, 
         int  customerId,
         CurrencyType currency, 
         decimal total, 
         DateTime createdAt, 
-        InvoiceStatus status) : base(id)
+        InvoiceStatus status) : base(Guid.NewGuid())
     {
-        Id = id;
         CompanyId = companyId;
         CustomerId = customerId;
         Currency = currency;
@@ -45,10 +43,18 @@ public class Invoice : AggregateRoot
             customerId <= 0 ||
             string.IsNullOrEmpty(currency.ToString()))
             throw new InvalidInvoiceDataException("Invoice Data (CompanyId, CustomerId, Currency) are missing!");
-
-        var invoiceId = Guid.NewGuid();
         
-        return new Invoice(invoiceId, companyId, customerId, currency, 0.0m, DateTime.UtcNow, InvoiceStatus.CREATED);
+        var invoice = new Invoice(
+            companyId, 
+            customerId, 
+            currency, 
+            0.0m, 
+            DateTime.UtcNow,
+            InvoiceStatus.CREATED);
+        
+        invoice.AddDomainEvent(new InvoiceCreatedDomainEvent(invoice.Id, invoice.CompanyId, invoice.Total));
+        
+        return invoice;
     }
 
     public void AddInvoiceItem(int productId, int quantity, decimal unitPrice)

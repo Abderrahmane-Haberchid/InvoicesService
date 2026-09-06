@@ -2,7 +2,7 @@ using Application.Abstractions;
 using MassTransit;
 using Microsoft.Extensions.Logging;
 
-namespace Infrastructure.Messaging;
+namespace Infrastructure.Messaging.Publishers;
 
 public class EventPublisher(
     IPublishEndpoint publishEndpoint, 

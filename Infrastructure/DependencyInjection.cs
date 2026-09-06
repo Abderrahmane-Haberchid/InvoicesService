@@ -2,6 +2,7 @@ using Application.Abstractions;
 using Infrastructure.Caching;
 using Infrastructure.Messaging;
 using Infrastructure.Messaging.Consumers;
+using Infrastructure.Messaging.Publishers;
 using Infrastructure.Pdf;
 using Infrastructure.Persistance;
 using MassTransit;

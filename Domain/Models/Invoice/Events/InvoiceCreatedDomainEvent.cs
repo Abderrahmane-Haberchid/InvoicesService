@@ -2,11 +2,12 @@ using Domain.Common;
 
 namespace Domain.Models.Invoice.Events;
 
-public record InvoiceCreatedDomainEvent : IDomainEvent
+public sealed record InvoiceCreatedDomainEvent(
+    Guid InvoiceId,
+    Guid CompanyId,
+    decimal Total
+    ) : IDomainEvent
 {
-    public Guid Id { get; set; }
-    public DateTime OccurredOn { get; set; }
-    public Guid InvoiceId { get; set; }
-    public Guid CompanyId { get; set; }
-    public decimal Total { get; set; }
+    public Guid Id { get; set; } = Guid.NewGuid();
+    public DateTime OccurredOn { get; set; } = DateTime.UtcNow;
 }
