@@ -17,22 +17,28 @@ public class AuthenticationController(
     public async Task<IActionResult> GetToken()
     {
         var client = httpClient.CreateClient();
+        
+        Log.Information("Connecting to Duende Server to get Discovery Document");
+        
         var discovery = await client.GetDiscoveryDocumentAsync(
             new DiscoveryDocumentRequest
             {
                 Address = configuration["Duende:Authority"]!,
                 Policy = new DiscoveryPolicy
                 {
-                    RequireHttps = false
+                    RequireHttps = true
                 }
             });
         
         if (discovery.IsError)
         {
-            Log.Error(discovery.Error!);
+            Log.Error($"Error Occured: {discovery.Error!}");
             return Unauthorized();
         }
-
+        
+        Log.Information($"Discovery Document received successfully...");
+        Log.Information($"Invoking Token Endpoint to get JWT...");
+        
         var tokenResponse = await client.RequestClientCredentialsTokenAsync(new ClientCredentialsTokenRequest
         {
             Address = discovery.TokenEndpoint,
@@ -43,9 +49,10 @@ public class AuthenticationController(
         if (tokenResponse.IsError)
         {
             
-            Log.Error(tokenResponse.Error!);
+            Log.Error($"Error Occured While Waiting for JWT {tokenResponse.Error!}");
             return BadRequest(tokenResponse.Error);
         }
+        Log.Information($"JWT received: {tokenResponse.AccessToken}");
         return Ok(tokenResponse.AccessToken);
     }
 }

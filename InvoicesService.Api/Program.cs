@@ -21,6 +21,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddScoped<ITenantProvider, TenantProvider>();
 
 builder.Services.AddEndpointsApiExplorer();
+
 builder.Services.AddSwaggerGen(options =>
 {
     // 1. Define the scheme
@@ -95,7 +96,13 @@ app.MapHealthChecks("/health");
 app.UseExceptionHandler();
 app.UseAuthentication();
 app.UseAuthorization();
-app.UseMiddleware<MultiTenacyMiddleware>();
+
+app.UseWhen(
+    context => context.Request.Path.StartsWithSegments("/api/v1/invoices"),
+    branch =>
+    {
+        branch.UseMiddleware<MultiTenacyMiddleware>();
+    });
 app.MapControllers();
 
 app.Run();

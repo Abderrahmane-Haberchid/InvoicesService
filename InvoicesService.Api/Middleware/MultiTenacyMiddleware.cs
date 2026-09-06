@@ -4,12 +4,10 @@ using Serilog;
 
 namespace InvoicesService.Middleware;
 
-public class MultiTenacyMiddleware(
-    RequestDelegate next,
-    ITenantProvider tenantProvider)
+public class MultiTenacyMiddleware(RequestDelegate next)
 {
 
-    public async Task InvokeAsync(HttpContext context)
+    public async Task InvokeAsync(HttpContext context, ITenantProvider tenantProvider)
     {
         Log.Information("Invoking Multi-Tenacy Middleware");
         
@@ -17,6 +15,7 @@ public class MultiTenacyMiddleware(
 
         if (!Guid.TryParse(compId, out var companyId))
         {
+            Log.Information($"Extracted Company Id: {compId}");
             throw new UnauthorizedAccessException("Invalid company id");
         }
         tenantProvider.SetTenantId(companyId);
