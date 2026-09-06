@@ -4,6 +4,7 @@ using Application.Features.CreateInvoice;
 using Domain.DomainExceptions;
 using Domain.Enums;
 using Domain.Models;
+using Domain.Models.Invoice;
 using Domain.Respository;
 using FluentAssertions;
 using FluentValidation;
@@ -164,7 +165,7 @@ public class CreateInvoiceHandlerTest
         
         _tenantProviderMock.Setup(x => x.TenantId).Returns(Guid.Empty);
         
-        await Assert.ThrowsAsync<InvalidInvoiceDataException>(() =>  _sut.Handle(command, CancellationToken.None));
+        await Assert.ThrowsAsync<TenantIdMissingException>(() =>  _sut.Handle(command, CancellationToken.None));
         
         _invoiceRepositoryMock.Verify(x => 
             x.CreateInvoiceAsync(It.IsAny<Invoice>(), It.IsAny<CancellationToken>()), 

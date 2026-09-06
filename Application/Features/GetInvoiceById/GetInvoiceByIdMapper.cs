@@ -1,5 +1,5 @@
 
-using Domain.Models;
+using Domain.Models.Invoice;
 
 namespace Application.Features.GetInvoiceById;
 

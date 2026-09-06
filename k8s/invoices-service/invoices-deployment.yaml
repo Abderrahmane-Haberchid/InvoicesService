@@ -34,7 +34,7 @@ spec:
               
       containers:
         - name: invoices-pod
-          image: invoices-service
+          image: invoice-image:2.2.0
           imagePullPolicy: IfNotPresent
 
           ports:

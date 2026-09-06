@@ -1,7 +1,6 @@
-using Application.Features.GetInvoiceByCustomerId;
-using Domain.Models;
+using Domain.Models.Invoice;
 
-namespace Application.Features.GetInvoiceByCutomerId;
+namespace Application.Features.GetInvoiceByCustomerId;
 
 public static class GetInvoiceByCustomerIdMapper
 {

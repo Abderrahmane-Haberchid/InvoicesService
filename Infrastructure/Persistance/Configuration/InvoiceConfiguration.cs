@@ -1,5 +1,6 @@
 using Application.Abstractions;
 using Domain.Models;
+using Domain.Models.Invoice;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -20,7 +21,5 @@ public class InvoiceConfiguration :  IEntityTypeConfiguration<Invoice>
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasIndex(i => i.CompanyId);
-
-        //builder.HasQueryFilter(i => i.CompanyId == tenantProvider.TenantId);
     }
 }

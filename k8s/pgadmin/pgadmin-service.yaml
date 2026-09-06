@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: pgadmin-service
+  labels:
+    app: invoices
+
+spec:
+  type: ClusterIP
+
+  selector:
+    app: pgadmin
+
+  ports:
+    - name: http
+      port: 5555
+      targetPort: 80

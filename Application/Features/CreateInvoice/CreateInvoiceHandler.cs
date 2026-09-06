@@ -1,6 +1,7 @@
 using Application.Abstractions;
 using Application.Exceptions;
 using Domain.Models;
+using Domain.Models.Invoice;
 using Domain.Respository;
 using FluentValidation;
 using InvoicesService.Shared.Contracts.Events;
@@ -29,7 +30,11 @@ public class CreateInvoiceHandler(
         
         logger.LogInformation("Invoice for customer {id} started processing in invoice service", 
             request.CustomerId);
-        
+
+        if (tenantProvider.TenantId == Guid.Empty)
+        {
+            throw new TenantIdMissingException("Company Id could not be null");
+        } 
         
         var invoice = Invoice.Create(
             tenantProvider.TenantId,

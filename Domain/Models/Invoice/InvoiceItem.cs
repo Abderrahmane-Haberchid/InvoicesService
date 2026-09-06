@@ -1,29 +1,25 @@
-
+using Domain.Common;
 using Domain.DomainExceptions;
 
-namespace Domain.Models;
+namespace Domain.Models.Invoice;
 
-public class InvoiceItem
+public class InvoiceItem : Entity
 {
-    public Guid Id { get; private set; }
     public Guid InvoiceId { get; private set; }
-
     public Invoice Invoice { get; private set; }
     public int ProductId { get; private set; }
     public int Quantity { get; private set; }
     public decimal UnitPrice { get; private set; }
     
-    private InvoiceItem(){}
+    private InvoiceItem() : base(Guid.NewGuid()){}
 
     internal InvoiceItem(
-        Guid id,
         Guid invoiceId,
         Invoice invoice, 
         int productId, 
         int quantity, 
-        decimal unitPrice)
+        decimal unitPrice) : base(Guid.NewGuid())
     {
-        Id = id;
         InvoiceId = invoiceId;
         Invoice = invoice;
         ProductId = productId;
@@ -36,7 +32,7 @@ public class InvoiceItem
         if(productId <= 0 || quantity <= 0 || unitPrice <= 0)
             throw new InvalidInvoiceItemDataException("Product and quantity are missing!");
         
-        return new InvoiceItem(Guid.NewGuid(), invoiceId, invoice, productId, quantity, unitPrice);
+        return new InvoiceItem(invoiceId, invoice, productId, quantity, unitPrice);
     }
 
     public void IncreaseQuantity(int quantity)

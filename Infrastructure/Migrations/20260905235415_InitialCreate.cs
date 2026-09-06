@@ -41,8 +41,6 @@ namespace Infrastructure.Migrations
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     CompanyId = table.Column<Guid>(type: "uuid", nullable: false),
-                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
-                    UserEmail = table.Column<string>(type: "text", nullable: false),
                     CustomerId = table.Column<int>(type: "integer", nullable: false),
                     Currency = table.Column<int>(type: "integer", nullable: false),
                     Total = table.Column<decimal>(type: "numeric", nullable: false),
@@ -147,6 +145,11 @@ namespace Infrastructure.Migrations
                 name: "IX_InvoiceItems_ProductId",
                 table: "InvoiceItems",
                 column: "ProductId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Invoices_CompanyId",
+                table: "Invoices",
+                column: "CompanyId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_OutboxMessages_EnqueueTime",

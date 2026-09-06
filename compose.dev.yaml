@@ -68,33 +68,6 @@ services:
     networks:
       - invoices-network
 
-#  keycloak:
-#    image: quay.io/keycloak/keycloak:26.3
-#    container_name: keycloak
-#    restart: unless-stopped
-#    command:
-#      - start-dev
-#    depends_on:
-#      postgres:
-#        condition: service_healthy
-#    environment:
-#      KC_DB: postgres
-#      KC_DB_URL_HOST: postgres
-#      KC_DB_URL_PORT: 5432
-#      KC_DB_URL_DATABASE: ${POSTGRES_DB}
-#      KC_DB_USERNAME: ${POSTGRES_USER}
-#      KC_DB_PASSWORD: ${POSTGRES_PASSWORD}
-#
-#      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN}
-#      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
-#
-#      KC_HTTP_ENABLED: "true"
-#      KC_PROXY_HEADERS: xforwarded
-#    ports:
-#      - "8888:8080"
-#    networks:
-#      - invoices-network
-
 volumes:
   postgres-data:
   pgadmin-data:
