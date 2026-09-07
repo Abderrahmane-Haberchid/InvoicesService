@@ -8,8 +8,7 @@ namespace Domain.Models.Invoice;
 
 public class Invoice : AggregateRoot
 {
-    public Guid CompanyId { get; set; }
-    
+    public Guid CompanyId { get; private set; }
     private readonly List<InvoiceItem> _items = new();
     public IReadOnlyCollection<InvoiceItem> Items => _items;
     public int CustomerId { get; private set; }
@@ -17,6 +16,7 @@ public class Invoice : AggregateRoot
     public decimal Total { get; private set; }
     public DateTime CreatedAt { get; private set; }
     public InvoiceStatus Status { get; private set; }
+    public Guid RowVersion { get; private set; } = Guid.NewGuid();
 
     private Invoice(
         Guid companyId, 
@@ -39,10 +39,13 @@ public class Invoice : AggregateRoot
         int customerId,
         CurrencyType currency)
     {
-        if (string.IsNullOrEmpty(companyId.ToString()) ||
+        if (companyId == Guid.Empty ||
             customerId <= 0 ||
-            string.IsNullOrEmpty(currency.ToString()))
+            !Enum.IsDefined(currency))
+        {
             throw new InvalidInvoiceDataException("Invoice Data (CompanyId, CustomerId, Currency) are missing!");
+        }
+            
         
         var invoice = new Invoice(
             companyId, 
@@ -52,7 +55,8 @@ public class Invoice : AggregateRoot
             DateTime.UtcNow,
             InvoiceStatus.CREATED);
         
-        invoice.AddDomainEvent(new InvoiceCreatedDomainEvent(invoice.Id, invoice.CompanyId, invoice.Total));
+        invoice.AddDomainEvent(
+            new InvoiceCreatedDomainEvent(invoice.Id, invoice.CompanyId, invoice.Total));
         
         return invoice;
     }
@@ -65,12 +69,14 @@ public class Invoice : AggregateRoot
         {
             existingItem.IncreaseQuantity(quantity);
             Total = CalculateTotal();
+            UpdateRowVersion();
             return;
         }
         
         var invoiceItem = InvoiceItem.Create(Id, this, productId, quantity, unitPrice);
         _items.Add(invoiceItem);
         Total = CalculateTotal();
+        UpdateRowVersion();;
     }
 
     private decimal CalculateTotal()
@@ -95,5 +101,11 @@ public class Invoice : AggregateRoot
             throw new InvoiceStatusAlreadyAssignedException($"Invoice already has same status {status}");
         }
         Status = status;
+        UpdateRowVersion();;
+    }
+
+    private void UpdateRowVersion()
+    {
+        RowVersion = Guid.NewGuid();
     }
 }

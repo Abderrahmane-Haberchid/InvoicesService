@@ -1,12 +1,10 @@
-using Application.Abstractions;
-using Domain.Models;
 using Domain.Models.Invoice;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Infrastructure.Persistance.Configuration;
 
-public class InvoiceConfiguration :  IEntityTypeConfiguration<Invoice>
+public class InvoiceConfiguration : IEntityTypeConfiguration<Invoice>
 {
     public void Configure(EntityTypeBuilder<Invoice> builder)
     {
@@ -21,5 +19,8 @@ public class InvoiceConfiguration :  IEntityTypeConfiguration<Invoice>
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasIndex(i => i.CompanyId);
+
+        builder.Property(i => i.RowVersion)
+            .IsConcurrencyToken();
     }
 }

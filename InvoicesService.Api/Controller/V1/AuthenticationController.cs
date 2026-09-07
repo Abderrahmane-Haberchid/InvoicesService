@@ -32,12 +32,12 @@ public class AuthenticationController(
         
         if (discovery.IsError)
         {
-            Log.Error($"Error Occured: {discovery.Error!}");
+            Log.Error("Error Occured: {DiscoveryError}", discovery.Error!);
             return Unauthorized();
         }
         
-        Log.Information($"Discovery Document received successfully...");
-        Log.Information($"Invoking Token Endpoint to get JWT...");
+        Log.Information("Discovery Document received successfully...");
+        Log.Information("Invoking Token Endpoint to get JWT...");
         
         var tokenResponse = await client.RequestClientCredentialsTokenAsync(new ClientCredentialsTokenRequest
         {
@@ -49,10 +49,10 @@ public class AuthenticationController(
         if (tokenResponse.IsError)
         {
             
-            Log.Error($"Error Occured While Waiting for JWT {tokenResponse.Error!}");
+            Log.Error("Error Occured While Waiting for JWT {TokenResponseError}", tokenResponse.Error!);
             return BadRequest(tokenResponse.Error);
         }
-        Log.Information($"JWT received: {tokenResponse.AccessToken}");
+        Log.Information("JWT received: {TokenResponseAccessToken}", tokenResponse.AccessToken);
         return Ok(tokenResponse.AccessToken);
     }
 }
