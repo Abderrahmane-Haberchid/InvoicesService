@@ -1,6 +1,8 @@
 using Application.Abstractions;
+using Application.Common.DomainEventDispacher;
 using Application.Exceptions;
 using Application.Features.CreateInvoice;
+using Domain.Common;
 using Domain.DomainExceptions;
 using Domain.Enums;
 using Domain.Models;
@@ -21,6 +23,7 @@ public class CreateInvoiceHandlerTest
     private readonly Mock<IEventPublisher> _eventPublisherMock;
     private readonly CreateInvoiceValidator _validator;
     private readonly Mock<ITenantProvider>  _tenantProviderMock;
+    private readonly Mock<IDomainEventDispacher> _domainEventDispacherMock;
     private ILogger<CreateInvoiceHandlerTest> _logger;
     
     private CreateInvoiceHandler _sut;
@@ -31,6 +34,7 @@ public class CreateInvoiceHandlerTest
         _eventPublisherMock = new Mock<IEventPublisher>();
         _validator = new CreateInvoiceValidator();
         _tenantProviderMock = new Mock<ITenantProvider>();
+        _domainEventDispacherMock = new Mock<IDomainEventDispacher>();
         
         _invoiceRepositoryMock
             .Setup(x => 
@@ -43,6 +47,7 @@ public class CreateInvoiceHandlerTest
             _invoiceRepositoryMock.Object,
             _validator,
             _eventPublisherMock.Object,
+            _domainEventDispacherMock.Object,
             _tenantProviderMock.Object,
             NullLogger<CreateInvoiceHandler>.Instance);
     }
@@ -78,6 +83,12 @@ public class CreateInvoiceHandlerTest
                      i.Total == expectedTotal), 
                 It.IsAny<CancellationToken>()), 
             Times.Once);
+        
+        _domainEventDispacherMock.Verify(x => 
+            x.DispachAsync(
+                It.IsAny<IReadOnlyCollection<IDomainEvent>>(), 
+                It.IsAny<CancellationToken>()), 
+            Times.Once());
 
         result.InvoiceItems.Should().HaveCount(3);
         result.Status.Should().Be(InvoiceStatus.CREATED);

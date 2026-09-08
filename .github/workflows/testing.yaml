@@ -1,16 +1,31 @@
-name: Testing Invoices Service
+name: Invoices CI/CD
 
-#on:
-#  pull_request:
-#    branches:
-#      - master
-#  push:
-#    branches:
-#      - master
+on:
+  pull_request:
+    branches:
+      - main
+
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  packages: write
+
+env:
+  DOTNET_VERSION: "10.0.x"
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}/invoices
 
 jobs:
-  tests:
-    name: Running Unit and Integration Tests
+
+  # ============================================================
+  # PR / CI
+  # ============================================================
+
+  build-and-test:
+    name: Build & Test
     runs-on: ubuntu-latest
 
     steps:
@@ -20,25 +35,186 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '10.0.x'
+          dotnet-version: ${{ env.DOTNET_VERSION }}
 
-      - name: Restore dependencies
+      - name: Restore
         run: dotnet restore
 
       - name: Build
         run: dotnet build --no-restore --configuration Release
 
-      - name: Run integration tests
+      # --------------------------------------------------------
+      # Unit tests
+      # --------------------------------------------------------
+
+      - name: Unit tests
         run: |
           dotnet test \
             --no-build \
             --configuration Release \
-            --logger "trx;LogFileName=test-results.trx"
+            --filter "Category=Unit" \
+            --logger "trx;LogFileName=unit-tests.trx"
 
-      - name: Publish test results
+      # --------------------------------------------------------
+      # Integration tests
+      # --------------------------------------------------------
+
+      - name: Integration tests
+        run: |
+          dotnet test \
+            --no-build \
+            --configuration Release \
+            --filter "Category=Integration" \
+            --logger "trx;LogFileName=integration-tests.trx"
+
+      # --------------------------------------------------------
+      # Upload test results
+      # --------------------------------------------------------
+
+      - name: Upload test results
         if: always()
-        uses: dorny/test-reporter@v2
+        uses: actions/upload-artifact@v4
         with:
-          name: Integration Tests
-          path: '**/test-results.trx'
-          reporter: dotnet-trx
+          name: test-results
+          path: "**/*.trx"
+
+  # ============================================================
+  # STATIC ANALYSIS / SECURITY
+  # ============================================================
+
+  quality:
+    name: Quality & Security
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Check vulnerable dependencies
+        run: dotnet list package --vulnerable --include-transitive
+
+      - name: Build
+        run: dotnet build --no-restore --configuration Release
+
+  # ============================================================
+  # DOCKER VALIDATION
+  # ============================================================
+
+  docker-validation:
+    name: Docker Build Validation
+    runs-on: ubuntu-latest
+
+    needs:
+      - build-and-test
+      - quality
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: |
+          docker build \
+            --tag invoices:test \
+            .
+
+      - name: Inspect image
+        run: docker image inspect invoices:test
+
+  # ============================================================
+  # PRODUCTION IMAGE
+  # ============================================================
+
+  publish:
+    name: Build & Publish Production Image
+    runs-on: ubuntu-latest
+
+    needs:
+      - build-and-test
+      - quality
+      - docker-validation
+
+    # IMPORTANT:
+    # This job only runs after merge to main.
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=sha
+            type=raw,value=latest
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build & Push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+  # ============================================================
+  # UPDATE GITOPS REPOSITORY
+  # ============================================================
+
+  update-gitops:
+    name: Update GitOps
+    runs-on: ubuntu-latest
+
+    needs:
+      - publish
+
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout GitOps repository
+        uses: actions/checkout@v4
+        with:
+          repository: my-company/invoices-gitops
+          token: ${{ secrets.GITOPS_TOKEN }}
+          path: gitops
+
+      - name: Update image tag
+        working-directory: gitops
+        run: |
+          sed -i \
+            "s/tag:.*/tag: ${{ github.sha }}/" \
+            environments/prod/invoices/values.yaml
+
+      - name: Commit GitOps change
+        working-directory: gitops
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add .
+
+          git commit \
+            -m "chore(invoices): deploy ${{ github.sha }}" \
+            || echo "No changes to commit"
+
+          git push

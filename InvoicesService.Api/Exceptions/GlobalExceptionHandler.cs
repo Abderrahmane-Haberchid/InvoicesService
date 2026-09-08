@@ -27,7 +27,7 @@ public class GlobalExceptionHandler : IExceptionHandler
             
             InvalidInvoiceItemDataException => (HttpStatusCode.BadRequest, "Domain Exception: Invalid invoice item data"),
             
-            InvalidInvoiceDataException => (HttpStatusCode.BadRequest, "Domain Exception: Invalid invoice data"),
+            InvalidInvoiceDataDomainException => (HttpStatusCode.BadRequest, "Domain Exception: Invalid invoice data"),
             
             NullObjectReturnedFromCreateRepositoryException => (HttpStatusCode.BadRequest, "Invoice Creation Failed!"),
             

@@ -39,10 +39,13 @@ public class Invoice : AggregateRoot
         int customerId,
         CurrencyType currency)
     {
-        if (string.IsNullOrEmpty(companyId.ToString()) ||
+        if (companyId == Guid.Empty ||
             customerId <= 0 ||
-            string.IsNullOrEmpty(currency.ToString()))
-            throw new InvalidInvoiceDataException("Invoice Data (CompanyId, CustomerId, Currency) are missing!");
+            !Enum.IsDefined(currency))
+        { 
+            throw new InvalidInvoiceDataDomainException(
+                "Invoice Data (CompanyId, CustomerId, Currency) are missing!");   
+        }
         
         var invoice = new Invoice(
             companyId, 
@@ -52,25 +55,43 @@ public class Invoice : AggregateRoot
             DateTime.UtcNow,
             InvoiceStatus.CREATED);
         
-        invoice.AddDomainEvent(new InvoiceCreatedDomainEvent(invoice.Id, invoice.CompanyId, invoice.Total));
+        invoice.AddDomainEvent(
+            new InvoiceCreatedDomainEvent(
+                invoice.Id, 
+                invoice.CompanyId, 
+                invoice.Total));
         
         return invoice;
     }
 
     public void AddInvoiceItem(int productId, int quantity, decimal unitPrice)
     {
-        // 1. Rule: if product ID already exist, we increase quantity, otherwise we add it
         var existingItem = _items.SingleOrDefault(i => i.ProductId == productId);
         if (existingItem != null)
         {
             existingItem.IncreaseQuantity(quantity);
             Total = CalculateTotal();
+            
+            AddDomainEvent(new ItemAddedDomainEvent(
+                Id,
+                existingItem.ProductId,
+                existingItem.UnitPrice,
+                existingItem.Quantity,
+                Total));
+            
             return;
         }
         
         var invoiceItem = InvoiceItem.Create(Id, this, productId, quantity, unitPrice);
         _items.Add(invoiceItem);
         Total = CalculateTotal();
+        
+        AddDomainEvent(new ItemAddedDomainEvent(
+            Id,
+            productId,
+            unitPrice,
+            quantity,
+            Total));
     }
 
     private decimal CalculateTotal()
