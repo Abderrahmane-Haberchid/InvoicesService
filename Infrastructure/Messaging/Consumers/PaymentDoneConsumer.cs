@@ -12,11 +12,13 @@ public class PaymentDoneConsumer(
 {
     public async Task Consume(ConsumeContext<PaymentDoneEvent> context)
     {
+        var message = context.Message;
+        
         logger.LogInformation("=====================================================================");
-        logger.LogInformation($"Payment done at {context.Message.PaymentId}, Setting Invoice to PAID...");
+        logger.LogInformation("Payment done at {MessagePaymentId}, Setting Invoice to PAID...", message.PaymentId);
         logger.LogInformation("=====================================================================");
         
-        var invoice = await invoiceRepository.GetInvoiceByIdAsync(context.Message.InvoiceId, default);
+        var invoice = await invoiceRepository.GetInvoiceByIdAsync(message.InvoiceId, CancellationToken.None);
 
         if (invoice == null)
         {
@@ -25,6 +27,6 @@ public class PaymentDoneConsumer(
         
         invoice.SetStatus(InvoiceStatus.PAID);
 
-        await invoiceRepository.SaveChangeAsync(default);
+        await invoiceRepository.SaveChangeAsync(CancellationToken.None);
     }
 }

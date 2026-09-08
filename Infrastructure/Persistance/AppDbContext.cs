@@ -1,6 +1,5 @@
 
 using Application.Abstractions;
-using Domain.Models;
 using Domain.Models.Invoice;
 using MassTransit;
 using MassTransit.EntityFrameworkCoreIntegration;

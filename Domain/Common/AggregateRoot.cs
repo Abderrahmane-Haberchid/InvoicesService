@@ -6,7 +6,7 @@ public abstract class AggregateRoot : Entity
     {
     }
 
-    private List<IDomainEvent> _domainEvents = new();
+    private List<IDomainEvent> _domainEvents = [];
     
     public IReadOnlyCollection<IDomainEvent> DomainEvents => _domainEvents.AsReadOnly();
 

@@ -8,8 +8,7 @@ namespace Domain.Models.Invoice;
 
 public class Invoice : AggregateRoot
 {
-    public Guid CompanyId { get; set; }
-    
+    public Guid CompanyId { get; private set; }
     private readonly List<InvoiceItem> _items = new();
     public IReadOnlyCollection<InvoiceItem> Items => _items;
     public int CustomerId { get; private set; }
@@ -17,6 +16,7 @@ public class Invoice : AggregateRoot
     public decimal Total { get; private set; }
     public DateTime CreatedAt { get; private set; }
     public InvoiceStatus Status { get; private set; }
+    public Guid RowVersion { get; private set; } = Guid.NewGuid();
 
     private Invoice(
         Guid companyId, 
@@ -79,6 +79,7 @@ public class Invoice : AggregateRoot
                 existingItem.Quantity,
                 Total));
             
+            UpdateRowVersion();
             return;
         }
         
@@ -92,6 +93,7 @@ public class Invoice : AggregateRoot
             unitPrice,
             quantity,
             Total));
+        UpdateRowVersion();;
     }
 
     private decimal CalculateTotal()
@@ -116,5 +118,11 @@ public class Invoice : AggregateRoot
             throw new InvoiceStatusAlreadyAssignedException($"Invoice already has same status {status}");
         }
         Status = status;
+        UpdateRowVersion();;
+    }
+
+    private void UpdateRowVersion()
+    {
+        RowVersion = Guid.NewGuid();
     }
 }

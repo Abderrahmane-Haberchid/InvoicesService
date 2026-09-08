@@ -15,7 +15,7 @@ public class MultiTenacyMiddleware(RequestDelegate next)
 
         if (!Guid.TryParse(compId, out var companyId))
         {
-            Log.Information($"Extracted Company Id: {compId}");
+            Log.Information("Extracted Company Id: {CompId}", compId);
             throw new UnauthorizedAccessException("Invalid company id");
         }
         tenantProvider.SetTenantId(companyId);

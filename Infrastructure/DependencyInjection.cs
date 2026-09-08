@@ -1,6 +1,5 @@
 using Application.Abstractions;
 using Infrastructure.Caching;
-using Infrastructure.Messaging;
 using Infrastructure.Messaging.Consumers;
 using Infrastructure.Messaging.Publishers;
 using Infrastructure.Pdf;
@@ -56,7 +55,7 @@ public static class DependencyInjection
             
             busConfiguration.SetKebabCaseEndpointNameFormatter();
             
-            busConfiguration.AddConfigureEndpointsCallback((context, name, cfg) =>
+            busConfiguration.AddConfigureEndpointsCallback((context, _, cfg) =>
             {
                 cfg.UseEntityFrameworkOutbox<AppDbContext>(context);
             });
