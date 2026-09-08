@@ -1,4 +1,6 @@
 using Application.Abstractions;
+using Application.Common.DomainEventDispacher;
+using Application.Common.DomainEventHandlers;
 using Application.Exceptions;
 using Domain.Models;
 using Domain.Models.Invoice;
@@ -14,6 +16,7 @@ public class CreateInvoiceHandler(
     IInvoiceRepository invoiceRepository,
     IValidator<CreateInvoiceCommand> validator,
     IEventPublisher eventPublisher,
+    IDomainEventDispacher domainEventDispacher,
     ITenantProvider tenantProvider,
     ILogger<CreateInvoiceHandler> logger) 
     : IRequestHandler<CreateInvoiceCommand, CreateInvoiceResponse>
@@ -27,9 +30,6 @@ public class CreateInvoiceHandler(
         {
             throw new ValidationException(validate.Errors);
         }
-        
-        logger.LogInformation("Invoice for customer {id} started processing in invoice service", 
-            request.CustomerId);
 
         if (tenantProvider.TenantId == Guid.Empty)
         {
@@ -48,6 +48,8 @@ public class CreateInvoiceHandler(
 
         if (savedInvoice is null)
             throw new NullObjectReturnedFromCreateRepositoryException("No Invoice Saved !");
+        
+        await domainEventDispacher.DispachAsync(invoice.DomainEvents, cancellationToken);
 
         var response = savedInvoice.ToResponse();
 

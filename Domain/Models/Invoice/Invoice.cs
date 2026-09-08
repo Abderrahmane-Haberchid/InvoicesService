@@ -42,10 +42,10 @@ public class Invoice : AggregateRoot
         if (companyId == Guid.Empty ||
             customerId <= 0 ||
             !Enum.IsDefined(currency))
-        {
-            throw new InvalidInvoiceDataException("Invoice Data (CompanyId, CustomerId, Currency) are missing!");
+        { 
+            throw new InvalidInvoiceDataDomainException(
+                "Invoice Data (CompanyId, CustomerId, Currency) are missing!");   
         }
-            
         
         var invoice = new Invoice(
             companyId, 
@@ -56,19 +56,29 @@ public class Invoice : AggregateRoot
             InvoiceStatus.CREATED);
         
         invoice.AddDomainEvent(
-            new InvoiceCreatedDomainEvent(invoice.Id, invoice.CompanyId, invoice.Total));
+            new InvoiceCreatedDomainEvent(
+                invoice.Id, 
+                invoice.CompanyId, 
+                invoice.Total));
         
         return invoice;
     }
 
     public void AddInvoiceItem(int productId, int quantity, decimal unitPrice)
     {
-        // 1. Rule: if product ID already exist, we increase quantity, otherwise we add it
         var existingItem = _items.SingleOrDefault(i => i.ProductId == productId);
         if (existingItem != null)
         {
             existingItem.IncreaseQuantity(quantity);
             Total = CalculateTotal();
+            
+            AddDomainEvent(new ItemAddedDomainEvent(
+                Id,
+                existingItem.ProductId,
+                existingItem.UnitPrice,
+                existingItem.Quantity,
+                Total));
+            
             UpdateRowVersion();
             return;
         }
@@ -76,6 +86,13 @@ public class Invoice : AggregateRoot
         var invoiceItem = InvoiceItem.Create(Id, this, productId, quantity, unitPrice);
         _items.Add(invoiceItem);
         Total = CalculateTotal();
+        
+        AddDomainEvent(new ItemAddedDomainEvent(
+            Id,
+            productId,
+            unitPrice,
+            quantity,
+            Total));
         UpdateRowVersion();;
     }
 
