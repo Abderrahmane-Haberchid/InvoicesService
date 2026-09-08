@@ -15,6 +15,7 @@ public class Invoice : AggregateRoot
     public CurrencyType Currency { get; private set; }
     public decimal Total { get; private set; }
     public DateTime CreatedAt { get; private set; }
+    public DateTime UpdatedAt { get; private set; }
     public InvoiceStatus Status { get; private set; }
     public Guid RowVersion { get; private set; } = Guid.NewGuid();
 
@@ -93,6 +94,7 @@ public class Invoice : AggregateRoot
             unitPrice,
             quantity,
             Total));
+        
         UpdateRowVersion();;
     }
 
@@ -124,5 +126,6 @@ public class Invoice : AggregateRoot
     private void UpdateRowVersion()
     {
         RowVersion = Guid.NewGuid();
+        UpdatedAt = DateTime.UtcNow;
     }
 }
