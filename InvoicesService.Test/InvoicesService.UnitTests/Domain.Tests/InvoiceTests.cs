@@ -73,7 +73,7 @@ public class InvoiceTests
         invoice.AddInvoiceItem(1, 10, 320);
         
         invoice.Items.Should().HaveCount(1);
-        invoice.Total.Should().Be(32000);
+        invoice.Total.Should().Be(9600);
         invoice.Items.FirstOrDefault(item => item.ProductId == 1)?.Quantity.Should().Be(30);
     }
     
