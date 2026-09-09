@@ -11,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace InvoicesServiceTest.InvoicesService.IntegrationTests;
 
+
 public class AddItemIntegrationTest : IClassFixture<InvoiceWebApplicationFactory>
 {
     private readonly InvoiceWebApplicationFactory _factory;
@@ -60,6 +61,7 @@ public class AddItemIntegrationTest : IClassFixture<InvoiceWebApplicationFactory
     [Fact]
     public async Task HandleAsync_ShouldReturn404_WhenInvoiceNotFound()
     {
+        await _factory.ResetDatabaseAsync();
         //Arrange
         var http = _factory.CreateClient();
         using var scope = _factory.Services.CreateScope();
@@ -78,6 +80,7 @@ public class AddItemIntegrationTest : IClassFixture<InvoiceWebApplicationFactory
     [Fact]
     public async Task HandleAsync_ShouldIncrementItemQuantity_WhenProductAlreadyExist()
     {
+        await _factory.ResetDatabaseAsync();
         //Arrange
         var http = _factory.CreateClient();
         
@@ -107,10 +110,12 @@ public class AddItemIntegrationTest : IClassFixture<InvoiceWebApplicationFactory
         ];
 
         //Act
-        var tasks = items.Select(item =>
-            http.PostAsJsonAsync($"api/v1/invoices/{invoice.Id}/items", item));
-        
-        await Task.WhenAll(tasks);
+        //var result = items.Select(async item =>
+          //  await http.PostAsJsonAsync($"api/v1/invoices/{invoice.Id}/items", item));
+          foreach (var item in items)
+          {
+              await http.PostAsJsonAsync($"api/v1/invoices/{invoice.Id}/items", item);
+          }
         var savedInvoice = await invoiceRepository.GetInvoiceByIdAsync(invoice.Id, CancellationToken.None);
         
         //Assert
