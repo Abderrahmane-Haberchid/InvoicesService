@@ -56,7 +56,8 @@ public class AddItemIntegrationTest : IClassFixture<InvoiceWebApplicationFactory
         body?.Quantity.Should().Be(command.Quantity);
         body?.Total.Should().Be(10 * 120);
     }
-
+    
+    [Fact]
     public async Task HandleAsync_ShouldReturn404_WhenInvoiceNotFound()
     {
         //Arrange
@@ -74,7 +75,7 @@ public class AddItemIntegrationTest : IClassFixture<InvoiceWebApplicationFactory
         //Assert
         result.StatusCode.Should().Be(HttpStatusCode.NotFound);
     } 
-    
+    [Fact]
     public async Task HandleAsync_ShouldIncrementItemQuantity_WhenProductAlreadyExist()
     {
         //Arrange
