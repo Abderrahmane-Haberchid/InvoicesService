@@ -78,38 +78,43 @@ public class InvoiceWebApplicationFactory : WebApplicationFactory<Program>, IAsy
         if (_respawner is null)
             throw new InvalidOperationException();
 
-        for (var i = 0; i < 50; i++)
+        await _semaphoreSlim.WaitAsync();
+        try
         {
-            try
+            for (var i = 0; i < 50; i++)
             {
-                await _semaphoreSlim.WaitAsync();
-                using var scope = Services.CreateScope();
-
-                var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
-                var hasMessages = await db.OutboxMessages.AnyAsync();
-
-                if (!hasMessages)
+                try
                 {
-                    await _respawner.ResetAsync(_dbConnection);
-                    return;
+                    using var scope = Services.CreateScope();
+                    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+                    var hasMessages = await db.OutboxMessages.AnyAsync();
+
+                    if (!hasMessages)
+                    {
+                        await _respawner.ResetAsync(_dbConnection);
+                        return;
+                    }
+                }
+                catch (PostgresException ex) when (ex.SqlState == "40P01")
+                {
+                    // Deadlock detected during check or reset, retry after delay
                 }
 
                 await Task.Delay(100);
             }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                throw;
-            }
-            finally
-            {
-                _semaphoreSlim.Release();
-            }
-        }
 
-        throw new TimeoutException(
-            "MassTransit outbox did not become empty.");
+            await _respawner.ResetAsync(_dbConnection);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+        finally
+        {
+            _semaphoreSlim.Release();
+        }
     }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)

@@ -15,6 +15,8 @@ public class AddItemHandler(
         AddItemCommand request, 
         CancellationToken cancellationToken)
     {
+        logger.LogInformation("Adding item {ItemId}", request.InvoiceId);
+        
         var result = await validator.ValidateAsync(request, cancellationToken);
         if (!result.IsValid)
         {
@@ -30,7 +32,10 @@ public class AddItemHandler(
             logger.LogWarning("Invoice not found {InvoiceId} at: {dateTime}", request.InvoiceId,  DateTime.UtcNow);
             throw new KeyNotFoundException("Invoice not found");
         }
-
+        
+        logger.LogInformation("Adding Item To invoice({items}) {invoiceId}", 
+            invoice.Items.Count, invoice.Id);
+        
         var invoiceItem = InvoiceItem.Create(
             request.InvoiceId,
             invoice,
@@ -41,7 +46,9 @@ public class AddItemHandler(
         invoice.AddInvoiceItem(invoiceItem);
 
         await invoiceRepository.SaveChangeAsync(cancellationToken);
-
+        
+        logger.LogInformation("Item Added to invoice ({newItemsCount})", invoice.Items.Count);
+        
         var item = invoice.GetItem(request.ProductId)!;
         return item.ToAddItemResponse();
     }
