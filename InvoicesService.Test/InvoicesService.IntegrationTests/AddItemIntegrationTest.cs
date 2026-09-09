@@ -1,7 +1,7 @@
+using System.Net;
 using System.Net.Http.Json;
 using Application.Abstractions;
 using Application.Features.AddItem;
-using Application.Features.CreateInvoice;
 using Domain.Enums;
 using Domain.Models.Invoice;
 using Domain.Respository;
@@ -56,6 +56,66 @@ public class AddItemIntegrationTest : IClassFixture<InvoiceWebApplicationFactory
         body?.Quantity.Should().Be(command.Quantity);
         body?.Total.Should().Be(10 * 120);
     }
+
+    public async Task HandleAsync_ShouldReturn404_WhenInvoiceNotFound()
+    {
+        //Arrange
+        var http = _factory.CreateClient();
+        using var scope = _factory.Services.CreateScope();
+        var tenantProvider = scope.ServiceProvider.GetRequiredService<ITenantProvider>();
+        tenantProvider.SetTenantId(TestClaims.CompanyId);
+        
+        var invoiceId = Guid.NewGuid();
+        var command = new AddItemCommand(invoiceId, 123, 10, 120);
+        
+        //Act
+        var result = await http.PostAsJsonAsync($"api/v1/invoices/{invoiceId}/items", command);
+        
+        //Assert
+        result.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    } 
     
-    
+    public async Task HandleAsync_ShouldIncrementItemQuantity_WhenProductAlreadyExist()
+    {
+        //Arrange
+        var http = _factory.CreateClient();
+        
+        var scope = _factory.Services.CreateScope();
+        var invoiceRepository = scope.ServiceProvider.GetRequiredService<IInvoiceRepository>();
+        
+        var tenantProvider = scope.ServiceProvider.GetRequiredService<ITenantProvider>();
+        tenantProvider.SetTenantId(TestClaims.CompanyId);
+        
+        var invoice = Invoice.Create(TestClaims.CompanyId, 123, CurrencyType.EUR);
+        
+        await invoiceRepository.CreateInvoiceAsync(invoice, CancellationToken.None);
+        await invoiceRepository.SaveChangeAsync(CancellationToken.None);
+
+        List<AddItemCommand> items =
+        [
+            new (invoice.Id, 123, 10, 120),
+            new (invoice.Id, 123, 10, 120),
+            new (invoice.Id, 123, 10, 120),
+            new (invoice.Id, 123, 10, 120),
+            new (invoice.Id, 123, 10, 120),
+            new (invoice.Id, 123, 10, 120),
+            new (invoice.Id, 123, 10, 120),
+            new (invoice.Id, 123, 10, 120),
+            new (invoice.Id, 123, 10, 120),
+            new (invoice.Id, 123, 10, 120)
+        ];
+
+        //Act
+        var tasks = items.Select(item =>
+            http.PostAsJsonAsync($"api/v1/invoices/{invoice.Id}/items", item));
+        
+        await Task.WhenAll(tasks);
+        var savedInvoice = await invoiceRepository.GetInvoiceByIdAsync(invoice.Id, CancellationToken.None);
+        
+        //Assert
+        savedInvoice.Should().NotBeNull();
+        savedInvoice?.Items.Should().HaveCount(1);
+        savedInvoice?.GetItem(123)?.Quantity.Should().Be(100);
+        savedInvoice?.Total.Should().Be(items.Sum(item => item.Quantity * item.UnitPrice));
+    } 
 }
