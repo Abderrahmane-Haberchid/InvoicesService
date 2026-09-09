@@ -3,11 +3,11 @@ name: Invoices CI/CD
 on:
   pull_request:
     branches:
-      - main
+      - master
 
   push:
     branches:
-      - main
+      - master
 
 permissions:
   contents: write
@@ -144,7 +144,7 @@ jobs:
 
     # IMPORTANT:
     # This job only runs after merge to main.
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
 
     steps:
       - name: Checkout
@@ -188,13 +188,13 @@ jobs:
     needs:
       - publish
 
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
 
     steps:
       - name: Checkout GitOps repository
         uses: actions/checkout@v4
         with:
-          repository: my-company/invoices-gitops
+          repository: mf/invoices-gitops
           token: ${{ secrets.GITOPS_TOKEN }}
           path: gitops
 
