@@ -42,7 +42,7 @@ public class CreateInvoiceHandler(
             request.Currency);
         
         request.Items
-            .ForEach(i => invoice.AddInvoiceItem(i.ProductId, i.Quantity, i.UnitPrice));
+            .ForEach(i => invoice.AddInvoiceItem(InvoiceItem.Create(invoice.Id, invoice, i.ProductId, i.Quantity, i.UnitPrice)));
         
         var savedInvoice = await invoiceRepository.CreateInvoiceAsync(invoice, cancellationToken);
 
