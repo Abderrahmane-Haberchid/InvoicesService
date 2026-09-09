@@ -9,6 +9,7 @@ using Moq;
 
 namespace InvoicesServiceTest.InvoicesService.UnitTests.Application.Tests;
 
+[Trait("Category", "Unit")]
 public class AddItemHandlerTest
 {
     private readonly Mock<IInvoiceRepository> _invoiceRepositoryMock;

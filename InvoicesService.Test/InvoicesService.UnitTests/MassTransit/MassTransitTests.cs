@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace InvoicesServiceTest.InvoicesService.UnitTests.MassTransit;
 
+[Trait("Category", "Unit")]
 public class MassTransitTests
 {
 

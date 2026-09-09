@@ -8,8 +8,9 @@ using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 
-namespace InvoicesServiceTest.InvoicesService.UnitTests;
+namespace InvoicesServiceTest.InvoicesService.UnitTests.Application.Tests;
 
+[Trait("Category", "Unit")]
 public class GetInvoicesHandlerTest
 {
     private readonly Mock<IInvoiceRepository> _invoiceRespositoryMock;

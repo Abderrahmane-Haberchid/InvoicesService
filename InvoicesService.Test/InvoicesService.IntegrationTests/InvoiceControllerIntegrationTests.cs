@@ -11,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace InvoicesServiceTest.InvoicesService.IntegrationTests;
 
 [Collection("IntegrationTests")]
+[Trait("Category", "Integration")]
 public class InvoiceControllerIntegrationTests : IClassFixture<InvoiceWebApplicationFactory>
 {
     

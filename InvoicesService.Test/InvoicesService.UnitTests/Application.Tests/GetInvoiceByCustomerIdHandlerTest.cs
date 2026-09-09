@@ -1,13 +1,13 @@
 using Application.Features.GetInvoiceByCustomerId;
 using Domain.Enums;
-using Domain.Models;
 using Domain.Models.Invoice;
 using Domain.Respository;
 using FluentAssertions;
 using Moq;
 
-namespace InvoicesServiceTest.InvoicesService.UnitTests;
+namespace InvoicesServiceTest.InvoicesService.UnitTests.Application.Tests;
 
+[Trait("Category", "Unit")]
 public class GetInvoiceByCustomerIdHandlerTest
 {
     private readonly Mock<IInvoiceRepository> _mockInvoiceRepository;

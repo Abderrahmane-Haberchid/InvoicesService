@@ -6,6 +6,8 @@ using FluentAssertions;
 
 namespace InvoicesServiceTest.InvoicesService.UnitTests.Domain.Tests;
 
+
+[Trait("Category", "Unit")]
 public class InvoiceTests
 {
 
@@ -70,10 +72,8 @@ public class InvoiceTests
         invoice.AddInvoiceItem(1, 10, 320);
         invoice.AddInvoiceItem(1, 10, 320);
         
-        decimal total = invoice.Items.Sum(item => item.Quantity * item.UnitPrice);
-        
         invoice.Items.Should().HaveCount(1);
-        invoice.Total.Should().Be(total);
+        invoice.Total.Should().Be(32000);
         invoice.Items.FirstOrDefault(item => item.ProductId == 1)?.Quantity.Should().Be(30);
     }
     

@@ -6,6 +6,7 @@ using Microsoft.Extensions.Options;
 
 namespace InvoicesServiceTest.InvoicesService.IntegrationTests.TestAuth;
 
+[Trait("Category", "Integration")]
 public class TestAuthHandler : AuthenticationHandler<AuthenticationSchemeOptions>
 {
     
