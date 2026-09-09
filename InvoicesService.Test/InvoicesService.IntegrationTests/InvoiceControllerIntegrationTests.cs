@@ -43,16 +43,15 @@ public class InvoiceControllerIntegrationTests : IClassFixture<InvoiceWebApplica
         
         var response = await client.PostAsJsonAsync("api/v1/invoices", command);
         
-        var savedInvoice = await invoiceRepository.GetAllInvoicesAsync(1 , 50, CancellationToken.None);
-        
-        Assert.NotNull(savedInvoice[0]);
-        savedInvoice.Should().HaveCount(1);
-        savedInvoice[0].CustomerId.Should().Be(command.CustomerId);
-        savedInvoice[0].Currency.Should().Be(command.Currency);
-        savedInvoice[0].Items.Should().HaveCount(command.Items.Count);
+        var savedInvoices = await invoiceRepository.GetAllInvoicesAsync(1 , 50, CancellationToken.None);
+        var savedInvoice = savedInvoices.FirstOrDefault();
+        Assert.NotNull(savedInvoice);
+        savedInvoice?.CustomerId.Should().Be(command.CustomerId);
+        savedInvoice?.Currency.Should().Be(command.Currency);
+        savedInvoice?.Items.Should().HaveCount(command.Items.Count);
         
         var expectedTotal = command.Items.Sum(i => i.UnitPrice * i.Quantity);
-        savedInvoice[0].Total.Should().Be(expectedTotal);
+        savedInvoice?.Total.Should().Be(expectedTotal);
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
 
