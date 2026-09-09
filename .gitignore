@@ -29,3 +29,6 @@ actions-runner/
 # Environment files
 .env
 .env.*
+
+# Serilog
+InvoicesService.Api/applog**.txt

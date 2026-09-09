@@ -5,6 +5,7 @@ using Domain.Respository;
 using Infrastructure;
 using Infrastructure.Persistance;
 using InvoicesService.Exceptions;
+using InvoicesService.Features;
 using InvoicesService.Middleware;
 using InvoicesService.TenantProvider;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -106,7 +107,7 @@ app.UseWhen(
         branch.UseMiddleware<MultiTenacyMiddleware>();
     });
 app.MapControllers();
-
+app.MapAddItemEndpoint();
 app.Run();
 
 public partial class Program { }
