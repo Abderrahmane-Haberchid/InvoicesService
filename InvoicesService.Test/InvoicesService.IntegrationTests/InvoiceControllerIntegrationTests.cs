@@ -1,10 +1,12 @@
 using System.Net;
 using System.Net.Http.Json;
+using Application.Abstractions;
 using Application.Features.CreateInvoice;
 using Domain.Enums;
 using Domain.Respository;
 using FluentAssertions;
 using InvoicesService.Shared.Contracts.Events;
+using InvoicesServiceTest.InvoicesService.IntegrationTests.TestAuth;
 using MassTransit.Testing;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -28,6 +30,9 @@ public class InvoiceControllerIntegrationTests : IClassFixture<InvoiceWebApplica
         await _factory.ResetDatabaseAsync();
         
         using var scope = _factory.Services.CreateScope();
+        var tenantProvider = scope.ServiceProvider.GetRequiredService<ITenantProvider>();
+        tenantProvider.SetTenantId(TestClaims.CompanyId);
+        
         var invoiceRepository = scope.ServiceProvider.GetRequiredService<IInvoiceRepository>();
         
         var client = _factory.CreateClient();
@@ -62,6 +67,9 @@ public class InvoiceControllerIntegrationTests : IClassFixture<InvoiceWebApplica
     {
         await _factory.ResetDatabaseAsync();
         using var scope = _factory.Services.CreateScope();
+        var tenantProvider = scope.ServiceProvider.GetRequiredService<ITenantProvider>();
+        tenantProvider.SetTenantId(TestClaims.CompanyId);
+        
         var invoiceRepository = scope.ServiceProvider.GetRequiredService<IInvoiceRepository>();
         
         var client = _factory.CreateClient();

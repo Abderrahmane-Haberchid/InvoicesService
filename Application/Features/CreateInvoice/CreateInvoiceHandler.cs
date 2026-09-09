@@ -1,6 +1,5 @@
 using Application.Abstractions;
 using Application.Common.DomainEventDispacher;
-using Application.Common.DomainEventHandlers;
 using Application.Exceptions;
 using Domain.Models;
 using Domain.Models.Invoice;

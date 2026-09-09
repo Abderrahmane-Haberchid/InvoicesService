@@ -7,9 +7,10 @@ public static class AddItemEndpoint
 {
     public static void MapAddItemEndpoint(this IEndpointRouteBuilder app)
     {
-        app.MapPost("api/v1/invoices/add-item", async (
+        app.MapPost("api/v1/invoices/{invoiceId}/items", async (
             ISender sender,
             AddItemCommand command,
+            Guid invoiceId,
         CancellationToken ct
         ) =>
         {
