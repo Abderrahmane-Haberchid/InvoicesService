@@ -9,8 +9,8 @@ namespace Infrastructure.Persistance;
 
 public class AppDbContext : DbContext
 {
-    public DbSet<Invoice> Invoices { get; set; }
-    public DbSet<InvoiceItem> InvoiceItems { get; set; }
+    public DbSet<Invoice> Invoices => Set<Invoice>();
+    public DbSet<InvoiceItem> InvoiceItems => Set<InvoiceItem>();
     public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
 
     private readonly ITenantProvider _tenantProvider;

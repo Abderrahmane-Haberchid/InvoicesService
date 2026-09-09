@@ -3,9 +3,7 @@ using Application.Common.DomainEventDispacher;
 using Application.Exceptions;
 using Application.Features.CreateInvoice;
 using Domain.Common;
-using Domain.DomainExceptions;
 using Domain.Enums;
-using Domain.Models;
 using Domain.Models.Invoice;
 using Domain.Respository;
 using FluentAssertions;
@@ -15,7 +13,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 
-namespace InvoicesServiceTest.InvoicesService.UnitTests;
+namespace InvoicesServiceTest.InvoicesService.UnitTests.Application.Tests;
 
 public class CreateInvoiceHandlerTest
 {

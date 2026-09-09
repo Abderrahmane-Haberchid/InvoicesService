@@ -65,12 +65,12 @@ public class Invoice : AggregateRoot
         return invoice;
     }
 
-    public void AddInvoiceItem(int productId, int quantity, decimal unitPrice)
+    public void AddInvoiceItem(InvoiceItem item)
     {
-        var existingItem = _items.SingleOrDefault(i => i.ProductId == productId);
+        var existingItem = _items.SingleOrDefault(i => i.ProductId == item.ProductId);
         if (existingItem != null)
         {
-            existingItem.IncreaseQuantity(quantity);
+            existingItem.IncreaseQuantity(item.Quantity);
             Total = CalculateTotal();
             
             AddDomainEvent(new ItemAddedDomainEvent(
@@ -84,18 +84,23 @@ public class Invoice : AggregateRoot
             return;
         }
         
-        var invoiceItem = InvoiceItem.Create(Id, this, productId, quantity, unitPrice);
-        _items.Add(invoiceItem);
+        _items.Add(item);
         Total = CalculateTotal();
         
         AddDomainEvent(new ItemAddedDomainEvent(
             Id,
-            productId,
-            unitPrice,
-            quantity,
+            item.ProductId,
+            item.UnitPrice,
+            item.Quantity,
             Total));
         
         UpdateRowVersion();;
+    }
+
+    public void AddInvoiceItem(int productId, int quantity, decimal unitPrice)
+    {
+        var item = InvoiceItem.Create(Id, this, productId, quantity, unitPrice);
+        AddInvoiceItem(item);
     }
 
     private decimal CalculateTotal()

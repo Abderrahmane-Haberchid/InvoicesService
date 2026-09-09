@@ -29,8 +29,14 @@ public class InvoiceItem : Entity
 
     public static InvoiceItem Create(Guid invoiceId, Invoice invoice, int productId, int quantity, decimal unitPrice)
     {
-        if(productId <= 0 || quantity <= 0 || unitPrice <= 0)
-            throw new InvalidInvoiceItemDataException("Product and quantity are missing!");
+        if (productId <= 0 ||
+            quantity <= 0 ||
+            unitPrice <= 0 ||
+            invoiceId == Guid.Empty ||
+            invoice == null)
+        {
+            throw new InvalidInvoiceItemDataException("Product, quantity or unit price are missing!");   
+        }
         
         return new InvoiceItem(invoiceId, invoice, productId, quantity, unitPrice);
     }

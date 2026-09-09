@@ -1,3 +1,4 @@
+using Domain.Models.Invoice;
 using Domain.Respository;
 using FluentValidation;
 using MediatR;
@@ -20,5 +21,28 @@ public class AddItemHandler(
             logger.LogError("Validation Failed {AddItemCommand}", result.Errors);
             throw new ValidationException("Unable to validate AddItemCommand");
         }
+
+        var invoice = await invoiceRepository
+            .GetInvoiceByIdAsync(request.InvoiceId, cancellationToken);
+
+        if (invoice == null)
+        {
+            logger.LogWarning("Invoice not found {InvoiceId} at: {dateTime}", request.InvoiceId,  DateTime.UtcNow);
+            throw new KeyNotFoundException("Invoice not found");
+        }
+
+        var invoiceItem = InvoiceItem.Create(
+            request.InvoiceId,
+            invoice,
+            request.ProductId,
+            request.Quantity,
+            request.UnitPrice);
+        
+        invoice.AddInvoiceItem(invoiceItem);
+
+        await invoiceRepository.SaveChangeAsync(cancellationToken);
+
+        var item = invoice.GetItem(request.ProductId)!;
+        return item.ToAddItemResponse();
     }
 }
