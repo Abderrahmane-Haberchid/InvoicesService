@@ -15,7 +15,7 @@ using Testcontainers.PostgreSql;
 using Testcontainers.RabbitMq;
 using Testcontainers.Redis;
 
-namespace InvoicesServiceTest.InvoicesService.IntegrationTests;
+namespace InvoicesServiceTest.InvoicesService.IntegrationTests.WebApplicationFactory;
 
 public class InvoiceWebApplicationFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
