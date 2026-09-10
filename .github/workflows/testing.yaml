@@ -143,7 +143,7 @@ jobs:
       - docker-validation
 
     # IMPORTANT:
-    # This job only runs after merge to main.
+    # This job only runs after merge to master.
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'
 
     steps:

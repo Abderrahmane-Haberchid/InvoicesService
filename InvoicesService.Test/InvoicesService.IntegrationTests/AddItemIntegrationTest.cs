@@ -7,6 +7,7 @@ using Domain.Models.Invoice;
 using Domain.Respository;
 using FluentAssertions;
 using InvoicesServiceTest.InvoicesService.IntegrationTests.TestAuth;
+using InvoicesServiceTest.InvoicesService.IntegrationTests.WebApplicationFactory;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace InvoicesServiceTest.InvoicesService.IntegrationTests;
