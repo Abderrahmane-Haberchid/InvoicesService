@@ -11,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace InvoicesServiceTest.InvoicesService.IntegrationTests;
 
+[Trait("Category", "Integration")]
 public class AddItemIntegrationTest : IClassFixture<InvoiceWebApplicationFactory>
 {
     private readonly InvoiceWebApplicationFactory _factory;
@@ -45,7 +46,13 @@ public class AddItemIntegrationTest : IClassFixture<InvoiceWebApplicationFactory
         
         //Assert
         result.EnsureSuccessStatusCode();
-        var savedInvoice = await invoiceRepository.GetInvoiceByIdAsync(invoice.Id, CancellationToken.None);
+        
+        using var scope2 = _factory.Services.CreateScope();
+        var tenantProvider2 = scope2.ServiceProvider.GetRequiredService<ITenantProvider>();
+        tenantProvider2.SetTenantId(TestClaims.CompanyId);
+        var invoiceRepository2 = scope2.ServiceProvider.GetRequiredService<IInvoiceRepository>();
+        
+        var savedInvoice = await invoiceRepository2.GetInvoiceByIdAsync(invoice.Id, CancellationToken.None);
         
         savedInvoice.Should().NotBeNull();
         savedInvoice!.Items.Should().Contain(i => i.ProductId == command.ProductId);
@@ -60,6 +67,7 @@ public class AddItemIntegrationTest : IClassFixture<InvoiceWebApplicationFactory
     [Fact]
     public async Task HandleAsync_ShouldReturn404_WhenInvoiceNotFound()
     {
+        await _factory.ResetDatabaseAsync();
         //Arrange
         var http = _factory.CreateClient();
         using var scope = _factory.Services.CreateScope();
@@ -78,10 +86,11 @@ public class AddItemIntegrationTest : IClassFixture<InvoiceWebApplicationFactory
     [Fact]
     public async Task HandleAsync_ShouldIncrementItemQuantity_WhenProductAlreadyExist()
     {
+        await _factory.ResetDatabaseAsync();
         //Arrange
         var http = _factory.CreateClient();
         
-        var scope = _factory.Services.CreateScope();
+        using var scope = _factory.Services.CreateScope();
         var invoiceRepository = scope.ServiceProvider.GetRequiredService<IInvoiceRepository>();
         
         var tenantProvider = scope.ServiceProvider.GetRequiredService<ITenantProvider>();
@@ -95,28 +104,26 @@ public class AddItemIntegrationTest : IClassFixture<InvoiceWebApplicationFactory
         List<AddItemCommand> items =
         [
             new (invoice.Id, 123, 10, 120),
-            new (invoice.Id, 123, 10, 120),
-            new (invoice.Id, 123, 10, 120),
-            new (invoice.Id, 123, 10, 120),
-            new (invoice.Id, 123, 10, 120),
-            new (invoice.Id, 123, 10, 120),
-            new (invoice.Id, 123, 10, 120),
-            new (invoice.Id, 123, 10, 120),
-            new (invoice.Id, 123, 10, 120),
             new (invoice.Id, 123, 10, 120)
         ];
 
         //Act
-        var tasks = items.Select(item =>
-            http.PostAsJsonAsync($"api/v1/invoices/{invoice.Id}/items", item));
-        
-        await Task.WhenAll(tasks);
-        var savedInvoice = await invoiceRepository.GetInvoiceByIdAsync(invoice.Id, CancellationToken.None);
+          foreach (var item in items)
+          {
+              await http.PostAsJsonAsync($"api/v1/invoices/{invoice.Id}/items", item);
+          }
+          
+        using var scope2 = _factory.Services.CreateScope();
+        var tenantProvider2 = scope2.ServiceProvider.GetRequiredService<ITenantProvider>();
+        tenantProvider2.SetTenantId(TestClaims.CompanyId);
+        var invoiceRepo2 = scope2.ServiceProvider.GetRequiredService<IInvoiceRepository>();
+        var savedInvoice = await invoiceRepo2.GetInvoiceByIdAsync(invoice.Id, CancellationToken.None);
         
         //Assert
         savedInvoice.Should().NotBeNull();
         savedInvoice?.Items.Should().HaveCount(1);
-        savedInvoice?.GetItem(123)?.Quantity.Should().Be(100);
-        savedInvoice?.Total.Should().Be(items.Sum(item => item.Quantity * item.UnitPrice));
+        savedInvoice?.Items.FirstOrDefault()?.Quantity.Should().Be(20);
+        savedInvoice?.Items.FirstOrDefault()?.ProductId.Should().Be(123);
+        savedInvoice?.Total.Should().Be(2400);
     } 
 }

@@ -3,11 +3,11 @@ name: Invoices CI/CD
 on:
   pull_request:
     branches:
-      - main
+      - master
 
   push:
     branches:
-      - main
+      - master
 
 permissions:
   contents: write
@@ -155,7 +155,7 @@ jobs:
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          password: ${{ secrets.GH_TOKEN }}
 
       - name: Extract Docker metadata
         id: meta
@@ -188,7 +188,7 @@ jobs:
     needs:
       - publish
 
-    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/masterr'
 
     steps:
       - name: Checkout GitOps repository
