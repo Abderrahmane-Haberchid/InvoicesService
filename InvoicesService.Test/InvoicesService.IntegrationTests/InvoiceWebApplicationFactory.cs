@@ -5,7 +5,6 @@ using MassTransit;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -79,37 +78,10 @@ public class InvoiceWebApplicationFactory : WebApplicationFactory<Program>, IAsy
             throw new InvalidOperationException();
 
         await _semaphoreSlim.WaitAsync();
+
         try
         {
-            for (var i = 0; i < 50; i++)
-            {
-                try
-                {
-                    using var scope = Services.CreateScope();
-                    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
-                    var hasMessages = await db.OutboxMessages.AnyAsync();
-
-                    if (!hasMessages)
-                    {
-                        await _respawner.ResetAsync(_dbConnection);
-                        return;
-                    }
-                }
-                catch (PostgresException ex) when (ex.SqlState == "40P01")
-                {
-                    // Deadlock detected during check or reset, retry after delay
-                }
-
-                await Task.Delay(100);
-            }
-
             await _respawner.ResetAsync(_dbConnection);
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-            throw;
         }
         finally
         {
