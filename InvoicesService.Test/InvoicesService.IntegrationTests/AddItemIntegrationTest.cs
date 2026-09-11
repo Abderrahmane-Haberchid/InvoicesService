@@ -13,7 +13,8 @@ using Microsoft.Extensions.DependencyInjection;
 namespace InvoicesServiceTest.InvoicesService.IntegrationTests;
 
 [Trait("Category", "Integration")]
-public class AddItemIntegrationTest : IClassFixture<InvoiceWebApplicationFactory>
+[Collection("SharedTestCollection")]
+public class AddItemIntegrationTest
 {
     private readonly InvoiceWebApplicationFactory _factory;
     public AddItemIntegrationTest(InvoiceWebApplicationFactory factory)
