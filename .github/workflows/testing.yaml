@@ -41,7 +41,7 @@ jobs:
         run: dotnet restore
 
       - name: Build
-        run: dotnet build --no-restore --configuration Release
+        run: dotnet build --warnaserror --no-restore --configuration Release
 
       # --------------------------------------------------------
       # Unit tests
