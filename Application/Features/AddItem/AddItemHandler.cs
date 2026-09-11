@@ -1,3 +1,4 @@
+using Application.Exceptions;
 using Domain.Models.Invoice;
 using Domain.Respository;
 using FluentValidation;
@@ -50,6 +51,12 @@ public class AddItemHandler(
         logger.LogInformation("Item Added to invoice ({newItemsCount})", invoice.Items.Count);
         
         var item = invoice.GetItem(request.ProductId)!;
+
+        if (item.Invoice is null)
+        {
+            throw new NullItemFromInvoiceException("Can't resolve item from saved invoice in Handler");
+        }
+
         return item.ToAddItemResponse();
     }
 }

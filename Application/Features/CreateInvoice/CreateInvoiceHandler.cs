@@ -1,7 +1,6 @@
 using Application.Abstractions;
 using Application.Common.DomainEventDispacher;
 using Application.Exceptions;
-using Domain.Models;
 using Domain.Models.Invoice;
 using Domain.Respository;
 using FluentValidation;
@@ -32,6 +31,7 @@ public class CreateInvoiceHandler(
 
         if (tenantProvider.TenantId == Guid.Empty)
         {
+            logger.LogCritical("Cannot resolve TenantId from TenantProvider in CreateInvoiceHadnler");
             throw new TenantIdMissingException("Company Id could not be null");
         } 
         
@@ -46,7 +46,10 @@ public class CreateInvoiceHandler(
         var savedInvoice = await invoiceRepository.CreateInvoiceAsync(invoice, cancellationToken);
 
         if (savedInvoice is null)
-            throw new NullObjectReturnedFromCreateRepositoryException("No Invoice Saved !");
+        {
+            //logger.LogError("Couldnt persist created invoice to database!");
+            throw new NullObjectReturnedFromCreateRepositoryException("No Invoice Saved !");   
+        }
         
         await domainEventDispacher.DispachAsync(invoice.DomainEvents, cancellationToken);
 

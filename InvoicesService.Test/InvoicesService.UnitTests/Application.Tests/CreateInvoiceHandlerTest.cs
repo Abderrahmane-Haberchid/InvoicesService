@@ -9,7 +9,6 @@ using Domain.Respository;
 using FluentAssertions;
 using FluentValidation;
 using InvoicesService.Shared.Contracts.Events;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 
@@ -20,10 +19,8 @@ public class CreateInvoiceHandlerTest
 {
     private readonly Mock<IInvoiceRepository> _invoiceRepositoryMock;
     private readonly Mock<IEventPublisher> _eventPublisherMock;
-    private readonly CreateInvoiceValidator _validator;
     private readonly Mock<ITenantProvider>  _tenantProviderMock;
     private readonly Mock<IDomainEventDispacher> _domainEventDispacherMock;
-    private ILogger<CreateInvoiceHandlerTest> _logger;
     
     private CreateInvoiceHandler _sut;
     
@@ -31,7 +28,7 @@ public class CreateInvoiceHandlerTest
     {
         _invoiceRepositoryMock = new Mock<IInvoiceRepository>();
         _eventPublisherMock = new Mock<IEventPublisher>();
-        _validator = new CreateInvoiceValidator();
+        var validator = new CreateInvoiceValidator();
         _tenantProviderMock = new Mock<ITenantProvider>();
         _domainEventDispacherMock = new Mock<IDomainEventDispacher>();
         
@@ -44,7 +41,7 @@ public class CreateInvoiceHandlerTest
         
         _sut = new CreateInvoiceHandler(
             _invoiceRepositoryMock.Object,
-            _validator,
+            validator,
             _eventPublisherMock.Object,
             _domainEventDispacherMock.Object,
             _tenantProviderMock.Object,
@@ -110,7 +107,7 @@ public class CreateInvoiceHandlerTest
         
         _invoiceRepositoryMock
             .Setup(x => x.CreateInvoiceAsync(It.IsAny<Invoice>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((Invoice invoice, CancellationToken _) => null!);
+            .ReturnsAsync((Invoice _, CancellationToken _) => null!);
         
         await Assert.ThrowsAsync<NullObjectReturnedFromCreateRepositoryException>(() => _sut.Handle(command, CancellationToken.None));
     }

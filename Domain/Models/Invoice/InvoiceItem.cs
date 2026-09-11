@@ -6,12 +6,15 @@ namespace Domain.Models.Invoice;
 public class InvoiceItem : Entity
 {
     public Guid InvoiceId { get; private set; }
-    public Invoice Invoice { get; private set; }
+    public Invoice? Invoice { get; private set; }
     public int ProductId { get; private set; }
     public int Quantity { get; private set; }
     public decimal UnitPrice { get; private set; }
-    
-    private InvoiceItem() : base(Guid.NewGuid()){}
+
+    internal InvoiceItem() : base(Guid.NewGuid())
+    {
+        
+    }
 
     internal InvoiceItem(
         Guid invoiceId,

@@ -20,24 +20,24 @@ namespace InvoicesServiceTest.InvoicesService.IntegrationTests.WebApplicationFac
 public class InvoiceWebApplicationFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
     private Respawner? _respawner;
-    private NpgsqlConnection _dbConnection;
+    private NpgsqlConnection? _dbConnection;
     private SemaphoreSlim _semaphoreSlim = new  (1, 1);
 
     private readonly PostgreSqlContainer _postgreSqlContainer =
-        new PostgreSqlBuilder()
+        new PostgreSqlBuilder("postgres:15-alpine")
             .WithDatabase("Invoices")
             .WithUsername("abdo")
             .WithPassword("abdo")
             .Build();
 
     private readonly RabbitMqContainer _rabbitMqContainer =
-        new RabbitMqBuilder()
+        new RabbitMqBuilder("rabbitmq:4-management-alpine")
             .WithUsername("guest")
             .WithPassword("guest")
             .Build();
 
     private readonly RedisContainer _redisContainer =
-        new RedisBuilder()
+        new RedisBuilder("redis:8")
             .Build();
 
     public async Task InitializeAsync()
@@ -81,7 +81,31 @@ public class InvoiceWebApplicationFactory : WebApplicationFactory<Program>, IAsy
 
         try
         {
-            await _respawner.ResetAsync(_dbConnection);
+            using var scope = Services.CreateScope();
+            var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            for (int i = 0; i < 50; i++)
+            {
+                try
+                {
+                    if (dbContext.OutboxMessages.Any())
+                    {
+                        await Task.Delay(200);
+                        continue;
+                    }
+
+                    if (_dbConnection != null)
+                    {
+                        await _respawner.ResetAsync(_dbConnection);
+                        return;
+                    }  
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                    throw;
+                }      
+            }
+            
         }
         finally
         {
@@ -107,7 +131,7 @@ public class InvoiceWebApplicationFactory : WebApplicationFactory<Program>, IAsy
             });
         });
         
-        builder.ConfigureAppConfiguration((context, config) =>
+        builder.ConfigureAppConfiguration((_, config) =>
         {
             config.AddInMemoryCollection(
                 new Dictionary<string, string?>
@@ -130,21 +154,14 @@ public class InvoiceWebApplicationFactory : WebApplicationFactory<Program>, IAsy
         });
     }
 
-    public async Task DisposeAsync()
+    public new async Task DisposeAsync()
     {
         await Task.WhenAll(
             _postgreSqlContainer.DisposeAsync().AsTask(),
             _rabbitMqContainer.DisposeAsync().AsTask(),
             _redisContainer.DisposeAsync().AsTask()
         );
-        
-        _dbConnection.Dispose();
+        _dbConnection?.Dispose();
         _semaphoreSlim.Dispose();
-        await DisposeAsyncCore();
-    }
-
-    private async Task DisposeAsyncCore()
-    {
-        await base.DisposeAsync();
     }
 }
