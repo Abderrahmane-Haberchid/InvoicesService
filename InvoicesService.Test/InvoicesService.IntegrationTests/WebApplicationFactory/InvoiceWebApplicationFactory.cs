@@ -5,6 +5,8 @@ using MassTransit;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -77,6 +79,7 @@ public class InvoiceWebApplicationFactory : WebApplicationFactory<Program>, IAsy
         if (_respawner is null)
             throw new InvalidOperationException();
 
+        CreatedInvoiceConsumerTest.Clear();
         await _semaphoreSlim.WaitAsync();
 
         try
@@ -97,15 +100,19 @@ public class InvoiceWebApplicationFactory : WebApplicationFactory<Program>, IAsy
                     {
                         await _respawner.ResetAsync(_dbConnection);
                         return;
-                    }  
+                    }
+                }
+                catch (PostgresException ex) when (ex.SqlState == "40P01")
+                {
+                    // Deadlock detected, retry
+                    await Task.Delay(100);
                 }
                 catch (Exception e)
                 {
                     Console.WriteLine(e);
                     throw;
-                }      
+                }
             }
-            
         }
         finally
         {
@@ -117,10 +124,9 @@ public class InvoiceWebApplicationFactory : WebApplicationFactory<Program>, IAsy
     {
         builder.UseEnvironment("Testing");
 
-        builder.ConfigureServices(services =>
+        builder.ConfigureTestServices(services =>
         {
             services.RemoveAll<IConfigureOptions<AuthenticationOptions>>();
-            
             services.AddAuthentication("TestScheme")
                 .AddScheme<AuthenticationSchemeOptions, TestAuthHandler>("TestScheme", _ => { });
             

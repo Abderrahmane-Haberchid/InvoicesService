@@ -105,6 +105,67 @@ jobs:
         run: dotnet build --no-restore --configuration Release
 
   # ============================================================
+  # SONAR ANALYSIS
+  # ============================================================
+
+  sonar:
+    name: Sonar Quality Check
+    runs-on: windows-latest
+
+    steps:
+      - name: Set up JDK 21
+        uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9
+        with:
+          java-version: 21
+          distribution: zulu
+
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          fetch-depth: 0
+
+      - name: Cache SonarQube Cloud packages
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
+        with:
+          path: ~\sonar\cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: |
+            ${{ runner.os }}-sonar
+
+      - name: Cache SonarQube Cloud scanner
+        id: cache-sonar-scanner
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
+        with:
+          path: ${{ runner.temp }}\scanner
+          key: ${{ runner.os }}-sonar-scanner
+          restore-keys: |
+            ${{ runner.os }}-sonar-scanner
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Install SonarQube Cloud scanner
+        if: steps.cache-sonar-scanner.outputs.cache-hit != 'true'
+        shell: powershell
+        run: |
+          New-Item -Path ${{ runner.temp }}\scanner -ItemType Directory
+          dotnet tool update dotnet-sonarscanner --tool-path ${{ runner.temp }}\scanner
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build and analyze
+        shell: powershell
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          ${{ runner.temp }}\scanner\dotnet-sonarscanner begin /k:"Abderrahmane-Haberchid_InvoicesService" /o:"abderrahmane-haberchid" /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
+          dotnet build --configuration Release
+          ${{ runner.temp }}\scanner\dotnet-sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
+
+  # ============================================================
   # DOCKER VALIDATION
   # ============================================================
 
@@ -142,8 +203,7 @@ jobs:
       - quality
       - docker-validation
 
-    # IMPORTANT:
-    # This job only runs after merge to master.
+    # Only runs after merge to master
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'
 
     steps:
@@ -188,7 +248,8 @@ jobs:
     needs:
       - publish
 
-    if: github.event_name == 'push' && github.ref == 'refs/heads/masterr'
+    # Only runs after successful publish on master
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
 
     steps:
       - name: Checkout GitOps repository

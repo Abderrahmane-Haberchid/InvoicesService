@@ -10,7 +10,10 @@ namespace InvoicesServiceTest.InvoicesService.UnitTests.MassTransit;
 [Trait("Category", "Unit")]
 public class MassTransitTests
 {
-
+    public MassTransitTests()
+    {
+        CreatedInvoiceConsumerTest.Clear();
+    }
     [Fact]
     public async Task PublishEndpoint_ShouldPublishInvoiceCreatedEvent_WhenPublishEndpointIsInvoked()
     {
