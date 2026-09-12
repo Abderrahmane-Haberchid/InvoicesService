@@ -1,3 +1,4 @@
+using System.Threading.RateLimiting;
 using Application;
 using Application.Abstractions;
 using Asp.Versioning;
@@ -21,8 +22,37 @@ Log.Logger = new LoggerConfiguration()
 
 var builder = WebApplication.CreateBuilder(args);
 
+#region Rate Limiter
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.AddPolicy("apiRateLimiter", httpContext =>
+    {
+        var clientId = httpContext.User.FindFirst("mf:cid")?.Value
+            ?? httpContext.Connection.RemoteIpAddress?.ToString()
+            ?? "unknown";
+
+        return RateLimitPartition.GetTokenBucketLimiter(
+            clientId,
+            _ => new TokenBucketRateLimiterOptions
+            {
+                TokenLimit = 200,
+                TokensPerPeriod = 100,
+                ReplenishmentPeriod = TimeSpan.FromSeconds(1),
+                AutoReplenishment = true,
+                QueueLimit = 50,
+                QueueProcessingOrder = QueueProcessingOrder.OldestFirst
+            });
+    });
+});
+
+#endregion
+
+
+
 builder.Services.AddScoped<ITenantProvider, TenantProvider>();
 
+#region OpenApi
 builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSwaggerGen(options =>
@@ -48,6 +78,7 @@ builder.Services.AddSwaggerGen(options =>
         }
     });
 });
+#endregion
 
 builder.Services.AddHealthChecks();
 
@@ -106,7 +137,11 @@ app.UseWhen(
     {
         branch.UseMiddleware<MultiTenacyMiddleware>();
     });
-app.MapControllers();
+
+app.UseRateLimiter();
+app.MapControllers()
+    .RequireRateLimiting("apiRateLimiter");
+
 app.MapAddItemEndpoint();
 app.Run();
 
